@@ -158,7 +158,6 @@ public class CourseDetailActivity extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.delete_menu:
-                Toast.makeText(this, "delete menu", Toast.LENGTH_SHORT).show();
                 deleteCourse();
                 return true;
             default:
