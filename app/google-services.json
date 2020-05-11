@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "146226736625",
+    "firebase_url": "https://learnbit-a7309.firebaseio.com",
+    "project_id": "learnbit-a7309",
+    "storage_bucket": "learnbit-a7309.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:146226736625:android:987c7fd2a29572115ea850",
+        "android_client_info": {
+          "package_name": "com.example.learnbit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "146226736625-35vsdehlr571aigrgn7f9e140s095egs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvYHnJlTwI8ZWFDDbGlXdfwM3YQcivxlA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "146226736625-35vsdehlr571aigrgn7f9e140s095egs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

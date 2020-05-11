@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#6200EE</color>
+    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorAccent">#ffd700</color>
+
+    //Learnbit Color Palette
+    <color name="primaryColor">#3E64FF</color>
+    <color name="primaryColorDark">#3E48FF</color>
+    <color name="tertiaryColor">#d8e0ff</color>
+    <color name="lightGray">#EBEBEB</color>
+    <color name="darkGray">#878787</color>
+    <color name="google">#ED5B5B</color>
+    <color name="facebook">#4A66AD</color>
+    <color name="semiTransparent">#1A000000</color>
+    <color name="orangeColor">#F0AF2D</color>
+    <color name="darkOrangeColor">#FF6600</color>
+    <color name="placeholder">#DDDDDD</color>
+</resources>

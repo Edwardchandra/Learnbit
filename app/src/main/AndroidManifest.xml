@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.learnbit">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".launch.teacher.home.search.SearchActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".launch.teacher.home.addcourse.fifthsection.AddFifthSectionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.teacher.home.addcourse.fourthsection.AddFourthSectionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.teacher.home.addcourse.thirdsection.AddThirdSectionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.teacher.home.addcourse.secondsection.AddSecondSectionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.teacher.home.addcourse.firstsection.AddFirstSectionActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.teacher.home.coursedetail.CourseDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.teacher.profile.accountsettings.ChangePasswordActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".launch.teacher.profile.accountsettings.EditProfileActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".launch.teacher.profile.withdraw.WithdrawActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".launch.teacher.TeacherMainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".launch.onboard.teacher.TeacherOnboardActivity" />
+        <activity
+            android:name=".launch.onboard.student.StudentOnboardActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.launch.RoleActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.launch.RegisterActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.launch.SignInActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".launch.launch.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/profile_image_filepaths" />
+        </provider>
+    </application>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+</manifest>

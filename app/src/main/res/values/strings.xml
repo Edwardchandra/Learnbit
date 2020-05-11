@@ -1,0 +1,206 @@
+<resources>
+    <string name="app_name">Learnbit</string>
+    <string name="ok">Okay</string>
+    <string name="app_prototype_desc">Learnbit Prototype Initial Stage</string>
+
+    <!--    //Launch Screen-->
+    <string name="launch_subtitle">Easy and Flexible Course Learning</string>
+    <string name="launch_image_description">Launch Screen Image</string>
+    <string name="launch_signIn_button">Sign In with existing account</string>
+    <string name="launch_register_button">Create a new account</string>
+
+    <!--    //Register Screen-->
+    <string name="register_title">Register</string>
+    <string name="register_subtitle">Create a new account to access all features</string>
+    <string name="register_image_description">Register Screen Image</string>
+    <string name="register_name_field">Enter your name</string>
+    <string name="register_email_field">Enter your email</string>
+    <string name="register_password_field">Enter your password</string>
+    <string name="register_create_button">Create Account</string>
+    <string name="register_signIn_button">Already has an account? Sign In</string>
+
+    <!--    //Sign In Screen-->
+    <string name="signIn_title">Sign In</string>
+    <string name="signIn_subtitle">Sign in with existing account to access all features</string>
+    <string name="signIn_image_description">Sign In Screen Image</string>
+    <string name="signIn_email_field">Enter your email</string>
+    <string name="signIn_password_field">Enter your password</string>
+    <string name="signIn_signIn_button">Sign in</string>
+    <string name="signIn_method_divider">or</string>
+    <string name="signIn_google_button">Continue with Google</string>
+    <string name="signIn_facebook_button">Continue with Facebook</string>
+
+    <!--    //Role Screen-->
+    <string name="role_title">What role are you?</string>
+    <string name="role_subtitle">Role is used to define the content that we show to you</string>
+    <string name="role_student">Student</string>
+    <string name="role_teacher">Teacher</string>
+
+    <!--    //Student Onboard Screen-->
+    <string name="student_onboard_next_button">Next</string>
+    <string name="student_onboard_skip_button">Skip</string>
+    <string name="student_onboard_start_button">Get Started</string>
+    <string name="student_onboard_title_a">Flexible</string>
+    <string name="student_onboard_subtitle_a">Learn any courses from anywhere without needed to come to a specific place</string>
+    <string name="student_onboard_title_b">Live</string>
+    <string name="student_onboard_subtitle_b">Live learning gives you an experience like in the normal course</string>
+    <string name="student_onboard_title_c">Quiz</string>
+    <string name="student_onboard_subtitle_c">Quiz is given at the end of the course to measure your knowledge of the course</string>
+
+    <!--    //Teacher Onboard Screen-->
+    <string name="teacher_onboard_top_information">You need to add your phone number so .</string>
+    <string name="teacher_onboard_cc_number_field">Credit card number</string>
+    <string name="teacher_onboard_valid_until_field">Valid until</string>
+    <string name="teacher_onboard_cvc_cvv_field">CVC/CVV</string>
+    <string name="teacher_onboard_cc_name_field">Card holder name</string>
+    <string name="teacher_onboard_bottom_information">The card holder name is the name that is written on your card.</string>
+    <string name="teacher_onboard_start_button">Get Started</string>
+
+    <!--    //Teacher Main-->
+    <string name="teacher_home">My Courses</string>
+    <string name="teacher_profile">Profile</string>
+
+    <!--    //Teacher Home Screen-->
+    <string name="teacher_home_search_hint">Search "Your Courses"</string>
+    <string name="teacher_home_search_button">Notifications"</string>
+
+    <!--    //Teacher Profile Screen-->
+    <string name="teacher_profile_image">Profile Picture</string>
+    <string name="teacher_profile_name">Edward Chandra</string>
+    <string name="teacher_profile_email">edwardchandra@gmail.com</string>
+    <string name="teacher_profile_status">Teacher</string>
+    <string name="teacher_profile_score_credit">100</string>
+    <string name="teacher_profile_score_title">Score</string>
+    <string name="teacher_profile_total_balance_title">Total Active Balance</string>
+    <string name="teacher_profile_total_balance_count">IDR 200.000</string>
+
+    <string name="teacher_profile_sectionA_title">Balance</string>
+    <string name="teacher_profile_sectionA_content">Withdraw Balance</string>
+    <string name="teacher_profile_sectionA_content_image">Withdraw Balance Image</string>
+
+    <string name="teacher_profile_sectionB_title">Account Settings</string>
+    <string name="teacher_profile_sectionB_contentA">Edit Profile</string>
+    <string name="teacher_profile_sectionB_contentB">Change Password</string>
+    <string name="teacher_profile_sectionB_content_imageA">Edit Profile Image</string>
+    <string name="teacher_profile_sectionB_content_imageB">Change Password Image</string>
+
+    <string name="teacher_profile_sectionC_title">Support</string>
+    <string name="teacher_profile_sectionC_contentA">About Learnbit</string>
+    <string name="teacher_profile_sectionC_contentB">Frequently Asked Questions</string>
+    <string name="teacher_profile_sectionC_contentC">Share Learnbit</string>
+    <string name="teacher_profile_sectionC_content_imageA">About Learnbit Image</string>
+    <string name="teacher_profile_sectionC_content_imageB">Frequently Asked Questions Image</string>
+    <string name="teacher_profile_sectionC_content_imageC">Share Learnbit Image</string>
+
+    <string name="teacher_profile_switch_to_student_button">Switch to Student</string>
+    <string name="teacher_profile_sign_out_button">Sign Out</string>
+
+    <!--    //Teacher Withdraw Screen-->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="cheeseIpsum">When the cheese comes out everybody\'s happy chalk and cheese rubber cheese. Cheesecake when the cheese comes out everybody\'s happy parmesan everyone loves macaroni cheese cheeseburger fromage frais goat. Cut the cheese the big cheese fromage frais cheddar goat paneer emmental cheddar. Fromage feta cauliflower cheese goat cheese and wine cheese and wine fromage.</string>
+
+
+    <!--    Testing Purpose-->
+    <string name="reviewIpsum">Definitely a recommendation to everyone who wants to learn about a space. The teacher is nice and answer all of my questions with a easy to understand, uncomplicated answer with an example.</string>
+    <string-array name="bank_array">
+        <item>Bank BCA</item>
+        <item>Bank BNI</item>
+        <item>Bank Permata</item>
+        <item>Bank Mandiri</item>
+        <item>Bank Nobu</item>
+        <item>Bank BTPN</item>
+        <item>Bank CIMB Niaga</item>
+        <item>Bank BRI</item>
+        <item>Bank Danamon</item>
+        <item>Bank BTN</item>
+        <item>Bank Mega</item>
+        <item>OCBC NISP</item>
+        <item>HSBC Bank</item>
+        <item>Commonwealth Bank</item>
+        <item>Bank Agris</item>
+        <item>Bank Mestika</item>
+        <item>Bank Sinarmas</item>
+        <item>Bank Victoria</item>
+        <item>Bank UOB Indonesia</item>
+        <item>Rabobank</item>
+        <item>Bank Panin</item>
+        <item>Maybank</item>
+        <item>KEB Hana Bank</item>
+        <item>Deutsche Bank</item>
+        <item>CITIBANK</item>
+        <item>DBS Bank</item>
+        <item>Bank Bukopin</item>
+        <item>OVO</item>
+        <item>Gopay</item>
+        <item>Dana</item>
+        <item>LinkAja</item>
+    </string-array>
+
+    <string-array name="category_array">
+        <item>Language and Literature</item>
+        <item>Personal Development</item>
+        <item>Computer Technology</item>
+        <item>Mathematics and Logic</item>
+        <item>Natural Science</item>
+        <item>Social Science</item>
+        <item>Art and Culture</item>
+        <item>Civic Education</item>
+    </string-array>
+
+    <string-array name="language_array">
+        <item>Indonesia</item>
+        <item>English</item>
+        <item>Mandarin</item>
+    </string-array>
+
+    <string-array name="personal_development_array">
+        <item>Physical Education</item>
+        <item>Religion</item>
+        <item>Self Esteem</item>
+    </string-array>
+
+    <string-array name="computer_array">
+        <item>IT and Software</item>
+        <item>Graphic Design</item>
+        <item>Office</item>
+        <item>Photo and Video Editing</item>
+    </string-array>
+
+    <string-array name="mathematics_array">
+        <item>General Mathematics</item>
+        <item>Discrete Mathematics</item>
+        <item>Statistic</item>
+    </string-array>
+
+    <string-array name="natural_array">
+        <item>Science Mathematics</item>
+        <item>Biology</item>
+        <item>Chemistry</item>
+        <item>Physics</item>
+    </string-array>
+
+    <string-array name="social_array">
+        <item>History</item>
+        <item>Geography</item>
+        <item>Sociology</item>
+        <item>Economics</item>
+    </string-array>
+
+    <string-array name="art_array">
+        <item>Music</item>
+        <item>Painting and Sculpture</item>
+        <item>Craftsmanship</item>
+    </string-array>
+
+    <string-array name="civic_array">
+        <item>Political Studies</item>
+    </string-array>
+
+    <string-array name="course_type_array">
+        <item>Video Call</item>
+        <item>Quiz</item>
+    </string-array>
+
+</resources>
