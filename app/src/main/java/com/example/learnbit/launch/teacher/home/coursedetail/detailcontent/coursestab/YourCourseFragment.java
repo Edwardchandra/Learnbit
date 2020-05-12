@@ -2,9 +2,11 @@ package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.cour
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,6 +37,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -101,6 +104,7 @@ public class YourCourseFragment extends Fragment {
 //        firebaseRecyclerOptions  = new FirebaseRecyclerOptions.Builder<Course>().setQuery(query, Course.class).build();
 
         query.addValueEventListener(new ValueEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
@@ -113,11 +117,8 @@ public class YourCourseFragment extends Fragment {
                             String key = entry.getKey();
                             Section value = entry.getValue();
 
-                            Log.d("topic2", value.getName() + " ");
-                            Log.d("topic2", value.getTopics() + " ");
-
-                            sectionArrayList.add(new Section(value.getName(), value.getTopics()));
-                            Collections.reverse(sectionArrayList);
+                            sectionArrayList.add(new Section(key, value.getName(), value.getTopics()));
+                            sectionArrayList.sort(Comparator.comparing(Section::getWeek));
 
                             Log.d("section", sectionArrayList + " ");
 
