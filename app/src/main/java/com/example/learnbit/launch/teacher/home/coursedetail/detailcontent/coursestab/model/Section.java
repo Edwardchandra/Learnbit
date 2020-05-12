@@ -5,15 +5,25 @@ import java.util.HashMap;
 
 public class Section {
 
+    private String week;
     private String name;
     private HashMap<String, Content> topics;
 
-    public Section(String name, HashMap<String, Content> topics) {
+    public Section(String week, String name, HashMap<String, Content> topics) {
+        this.week = week;
         this.name = name;
         this.topics = topics;
     }
 
     public Section(){}
+
+    public String getWeek() {
+        return week;
+    }
+
+    public void setWeek(String week) {
+        this.week = week;
+    }
 
     public String getName() {
         return name;

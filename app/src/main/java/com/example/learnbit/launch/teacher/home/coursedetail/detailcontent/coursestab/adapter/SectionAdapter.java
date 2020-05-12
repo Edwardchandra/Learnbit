@@ -40,7 +40,7 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
     public void onBindViewHolder(@NonNull SectionViewHolder holder, int position) {
         Log.d("sectionaja", sectionArrayList.size() + " ");
 
-        holder.sectionName.setText("Section " + position + " - " +sectionArrayList.get(position).getName());
+        holder.sectionName.setText(sectionArrayList.get(position).getWeek() + " - " +sectionArrayList.get(position).getName());
 
         for (HashMap.Entry<String, Content> entry : sectionArrayList.get(position).getTopics().entrySet()){
             Content value = entry.getValue();
