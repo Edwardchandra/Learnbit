@@ -101,8 +101,6 @@ public class YourCourseFragment extends Fragment {
         databaseReference = firebaseDatabase.getReference("Course");
         Query query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
 
-//        firebaseRecyclerOptions  = new FirebaseRecyclerOptions.Builder<Course>().setQuery(query, Course.class).build();
-
         query.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
@@ -121,12 +119,6 @@ public class YourCourseFragment extends Fragment {
                             sectionArrayList.sort(Comparator.comparing(Section::getWeek));
 
                             Log.d("section", sectionArrayList + " ");
-
-                            for (HashMap.Entry<String, Content> entry1 : value.getTopics().entrySet()){
-                                Content value1 = entry1.getValue();
-
-                                Log.d("topic2", value1.getSectionTopicName() + " ");
-                            }
                         }
 
                         setupRecyclerView();

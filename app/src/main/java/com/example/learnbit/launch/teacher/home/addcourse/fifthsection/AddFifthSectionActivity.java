@@ -231,7 +231,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private void uploadCourseImage(){
-        storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName);
+        storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child("courseImage");
 
         Drawable imageDrawable = courseImageView.getDrawable();
 
@@ -249,13 +249,10 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
                         if (taskSnapshot.getMetadata()!=null){
                             if (taskSnapshot.getMetadata().getReference()!=null){
                                 Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
-                                result.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri uri) {
-                                        courseImageURL = uri.toString();
-                                        Log.d("courseImageURL", courseImageURL);
-                                        createCourse();
-                                    }
+                                result.addOnSuccessListener(uri -> {
+                                    courseImageURL = uri.toString();
+                                    Log.d("courseImageURL", courseImageURL);
+                                    createCourse();
                                 });
                             }
                         }
