@@ -1,6 +1,7 @@
 package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.adapter;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,9 +14,11 @@ import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.cours
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,6 +39,7 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
         return new SectionViewHolder(view);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onBindViewHolder(@NonNull SectionViewHolder holder, int position) {
         Log.d("sectionaja", sectionArrayList.size() + " ");
@@ -43,11 +47,17 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
         holder.sectionName.setText(sectionArrayList.get(position).getWeek() + " - " +sectionArrayList.get(position).getName());
 
         for (HashMap.Entry<String, Content> entry : sectionArrayList.get(position).getTopics().entrySet()){
+            String key = entry.getKey();
             Content value = entry.getValue();
 
-            holder.contentArrayList.add(new Content(value.getSectionTopicName(), value.getSectionTopicType()));
-            Collections.reverse(holder.contentArrayList);
+            holder.contentArrayList.add(new Content(key, value.getSectionTopicName(), value.getSectionTopicType()));
+            holder.contentArrayList.sort(Comparator.comparing(Content::getSectionPart));
         }
+
+        ContentAdapter contentAdapter = new ContentAdapter(holder.contentArrayList, holder.context, sectionArrayList.get(position).getWeek());
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(holder.context);
+        holder.contentRV.setLayoutManager(layoutManager);
+        holder.contentRV.setAdapter(contentAdapter);
     }
 
     @Override
@@ -68,14 +78,6 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
             sectionName = itemView.findViewById(R.id.teacherCourse_SectionName);
             contentRV = itemView.findViewById(R.id.teacherCourse_ContentRecyclerView);
             context = itemView.getContext();
-            setupRV();
-        }
-
-        private void setupRV(){
-            ContentAdapter contentAdapter = new ContentAdapter(contentArrayList, context);
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
-            contentRV.setLayoutManager(layoutManager);
-            contentRV.setAdapter(contentAdapter);
         }
     }
 }

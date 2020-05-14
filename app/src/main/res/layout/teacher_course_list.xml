@@ -46,7 +46,7 @@
             android:maxLines="2"
             android:text="The physics behind machine and how the machine works."
             android:textColor="@android:color/black"
-            android:textSize="15sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/teacherCourseStudentCountTV"
