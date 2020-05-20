@@ -95,7 +95,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                         Log.d("courseImageURL", courseImageURL + " ");
                         Glide.with(getApplicationContext()).load(courseImageURL).into(courseDetailImageView);
 
-                        if (!course.getCourseAcceptance()){
+                        if (course.getCourseAcceptance().equals("pending")){
                             linearLayout.setVisibility(View.VISIBLE);
                         }else{
                             linearLayout.setVisibility(View.INVISIBLE);

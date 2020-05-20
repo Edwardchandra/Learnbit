@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
+import com.example.learnbit.launch.teacher.home.addcourse.fifthsection.model.Date;
 import com.example.learnbit.launch.teacher.profile.withdraw.model.Withdraw;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -32,6 +33,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class WithdrawActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
@@ -52,6 +58,8 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
     private DatabaseReference databaseReference1;
 
     private String key;
+    private String dateTime;
+    private String timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +79,7 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
         setupToolbar();
         setupFirebase();
         getData();
+        getCurrentDateTime();
     }
 
     private void setupToolbar(){
@@ -127,7 +136,7 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
                             Log.d("exception", "not a number");
                         }
                         
-                        databaseReference.setValue(new Withdraw(spinnerValue, accountNumber, accountNameET.getText().toString(), false, amount, user.getUid()));
+                        databaseReference.setValue(new Withdraw(spinnerValue, accountNumber, accountNameET.getText().toString(), "pending", amount, user.getUid(), dateTime, "", timestamp));
                         Toast.makeText(WithdrawActivity.this, "The withdraw process will take 2 - 3 days to be finished as we need to authenticate", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(WithdrawActivity.this, "Your entered password didn't match your account password", Toast.LENGTH_SHORT).show();
@@ -135,6 +144,16 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
                 }
             });
         }
+    }
+
+    private void getCurrentDateTime(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMM yyyy HH:mm", Locale.ENGLISH);
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+
+        dateTime = simpleDateFormat.format(new java.util.Date());
+
+        Long timestampLong = System.currentTimeMillis()/1000;
+        timestamp = Long.toString(timestampLong);
     }
 
     private void getData(){

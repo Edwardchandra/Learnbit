@@ -132,45 +132,7 @@
                 android:textColor="@android:color/white"
                 android:textSize="16sp" />
 
-            <TextView
-                android:id="@+id/textView5"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/signIn_method_divider"
-                android:textAlignment="center"
-                android:textColor="@color/darkGray"
-                android:textSize="13sp" />
-
-            <Button
-                android:id="@+id/signIn.googleSignInButton"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginEnd="20dp"
-                android:background="@drawable/google_button"
-                android:text="@string/signIn_google_button"
-                android:textAllCaps="false"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
-            <Button
-                android:id="@+id/signIn.facebookSignInButton"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginBottom="15dp"
-                android:background="@drawable/facebook_button"
-                android:text="@string/signIn_facebook_button"
-                android:textAllCaps="false"
-                android:textColor="@android:color/white"
-                android:textSize="16sp" />
-
         </LinearLayout>
-
 
     </ScrollView>
 
