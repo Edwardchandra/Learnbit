@@ -15,18 +15,13 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Button launchSignInButton;
-    private Button launchRegisterButton;
-
-    private FirebaseAuth firebaseAuth;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        launchSignInButton = (Button) findViewById(R.id.launchSignInButton);
-        launchRegisterButton = (Button) findViewById(R.id.launchRegisterButton);
+        Button launchSignInButton = findViewById(R.id.launchSignInButton);
+        Button launchRegisterButton = findViewById(R.id.launchRegisterButton);
 
         launchSignInButton.setOnClickListener(this);
         launchRegisterButton.setOnClickListener(this);
@@ -51,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
         FirebaseUser user = firebaseAuth.getCurrentUser();
         updateUI(user);

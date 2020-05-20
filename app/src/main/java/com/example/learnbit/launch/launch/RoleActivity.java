@@ -23,6 +23,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -50,8 +52,8 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_role);
 
-        studentButton = (LinearLayout) findViewById(R.id.role_StudentButton);
-        teacherButton = (LinearLayout) findViewById(R.id.role_TeacherButton);
+        studentButton = findViewById(R.id.role_StudentButton);
+        teacherButton = findViewById(R.id.role_TeacherButton);
 
         studentButton.setOnClickListener(this);
         teacherButton.setOnClickListener(this);
@@ -69,8 +71,14 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("Users");
 
-        databaseReference.child(user.getUid()).setValue(new User(name, email));
-        databaseReference.child(user.getUid()).child("teacher").setValue(new Teacher(balance, "", rating));
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+            String deviceToken = instanceIdResult.getToken();
+
+            databaseReference.child(user.getUid()).setValue(new User(name, email, deviceToken));
+            databaseReference.child(user.getUid()).child("teacher").setValue(new Teacher(balance, "", rating));
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, "Failed to save value.", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void setupFirebaseStorage(){
@@ -87,17 +95,8 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
         byte[] data = baos.toByteArray();
 
         UploadTask uploadTask = storageReference.putBytes(data);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Failed to upload profile image", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getApplicationContext(), "Successfully upload profile image", Toast.LENGTH_SHORT).show();
-            }
-        });
+        uploadTask.addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Failed to upload profile image", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(taskSnapshot -> Toast.makeText(getApplicationContext(), "Successfully upload profile image", Toast.LENGTH_SHORT).show());
     }
 
     private void getIntentData(){

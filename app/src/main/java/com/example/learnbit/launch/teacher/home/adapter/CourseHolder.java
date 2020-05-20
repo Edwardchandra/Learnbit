@@ -44,7 +44,7 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
         courseName = course.getCourseName();
         String courseStudent = String.valueOf(course.getCourseStudent());
         String courseImageURL = course.getCourseImageURL();
-        Boolean courseAcceptance = course.getCourseAcceptance();
+        String courseAcceptance = course.getCourseAcceptance();
         HashMap<String, Boolean> courseTime = course.getCourseTime();
 
         String key = "";
@@ -57,7 +57,7 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
             value = entry.getValue();
             Log.d("courseTimefirebase", key + value + " ");
 
-            if (!courseAcceptance){
+            if (courseAcceptance.equals("pending")){
                 teacherCourseTime.setText("Awaiting Admin Confirmation");
             }else {
                 teacherCourseTime.setText("Course starts at " + key);

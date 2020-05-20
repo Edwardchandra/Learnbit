@@ -26,8 +26,12 @@ import com.example.learnbit.R;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
 import com.example.learnbit.launch.model.userdata.User;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -35,6 +39,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -44,31 +50,26 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class EditProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView profileImageView;
-    private LinearLayout changeProfileImageButton;
-    private Button saveChangesButton;
-    private EditText profileName, profileEmail, profileBio;
+    private EditText profileName, profileEmail, profileBio, profilePassword;
 
     private String cameraFilePath;
 
     private Intent galleryIntent;
     private Intent cameraIntent;
 
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
 
-    private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
     private DatabaseReference databaseReference1;
 
-    private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
 
     private User users = new User();
-    private Teacher teacher = new Teacher();
 
     private double rating;
     private long balance;
@@ -79,11 +80,12 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         setContentView(R.layout.activity_edit_profile);
 
         profileImageView = findViewById(R.id.editProfile_ImageView);
-        changeProfileImageButton = findViewById(R.id.editProfile_ChangeImageButton);
-        saveChangesButton = findViewById(R.id.editProfile_SaveButton);
+        LinearLayout changeProfileImageButton = findViewById(R.id.editProfile_ChangeImageButton);
+        Button saveChangesButton = findViewById(R.id.editProfile_SaveButton);
         profileName = findViewById(R.id.editProfile_NameET);
         profileEmail = findViewById(R.id.editProfile_EmailET);
         profileBio = findViewById(R.id.editProfile_BioET);
+        profilePassword = findViewById(R.id.editProfile_PasswordET);
 
         changeProfileImageButton.setOnClickListener(this);
         saveChangesButton.setOnClickListener(this);
@@ -96,7 +98,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_DCIM);
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
@@ -172,27 +174,42 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void setupFirebaseAuth(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
     }
 
     private void setupFirebaseDatabase(){
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
 
         databaseReference = firebaseDatabase.getReference("Users").child(user.getUid());
         databaseReference1 = firebaseDatabase.getReference("Users").child(user.getUid()).child("teacher");
     }
 
     private void setupFirebaseStorage(){
-        firebaseStorage = FirebaseStorage.getInstance();
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference().child("Users").child(user.getUid()).child("profileimage");
     }
 
     private void updateProfileData(){
-        databaseReference.setValue(new User(profileName.getText().toString(), profileEmail.getText().toString()));
-        databaseReference1.setValue(new Teacher(balance, profileBio.getText().toString(), rating));
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+            String token = instanceIdResult.getToken();
+            databaseReference.setValue(new User(profileName.getText().toString(), profileEmail.getText().toString(), token));
+            databaseReference1.setValue(new Teacher(balance, profileBio.getText().toString(), rating));
 
-        Toast.makeText(this, "Your profile data successfully updated", Toast.LENGTH_SHORT).show();
+            if (user.getEmail()!=null){
+                AuthCredential authCredential = EmailAuthProvider.getCredential(user.getEmail(), profilePassword.getText().toString());
+                user.reauthenticate(authCredential).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()){
+                        user.updateEmail(profileEmail.getText().toString());
+                        Toast.makeText(getApplicationContext(), "Your profile data successfully updated", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(getApplicationContext(), "Your profile data failed to update", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, "failed to save data", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void retrieveDataFromFirebase(){
@@ -237,16 +254,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         byte[] data = baos.toByteArray();
 
         UploadTask uploadTask = storageReference.putBytes(data);
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getApplicationContext(), "Failed to upload profile image", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getApplicationContext(), "Successfully upload profile image", Toast.LENGTH_SHORT).show();
-            }
-        });
+        uploadTask.addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Failed to upload profile image", Toast.LENGTH_SHORT).show())
+                .addOnSuccessListener(taskSnapshot -> Toast.makeText(getApplicationContext(), "Successfully upload profile image", Toast.LENGTH_SHORT).show());
     }
 }

@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class AddFifthSectionActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -74,7 +76,8 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     private String cameraFilePath;
     private Intent galleryIntent, cameraIntent;
 
-
+    private String dateTime;
+    private String timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,7 +159,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(new java.util.Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_DCIM);
         File image = File.createTempFile(imageFileName, ".jpg", storageDir);
@@ -181,6 +184,8 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private void createCourse(){
+        getCurrentDateTime();
+
         HashMap<String, String> courseSchedule = new HashMap<>();
         HashMap<String, String> courseBenefit = new HashMap<>();
         HashMap<String, Boolean> courseTime = new HashMap<>();
@@ -204,7 +209,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
 
         databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).push();
 
-        databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, false, 0, courseCategory, courseSubcategory, courseImageURL));
+        databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, "pending", 0, courseCategory, courseSubcategory, courseImageURL, dateTime, timestamp));
         databaseReference.child("courseDate").setValue(new Date(courseStartDate, courseEndDate));
         databaseReference.child("courseSchedule").setValue(courseSchedule);
 
@@ -258,5 +263,15 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
                         }
                     });
         }
+    }
+
+    private void getCurrentDateTime(){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMM yyyy HH:mm", Locale.ENGLISH);
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
+
+        dateTime = simpleDateFormat.format(new java.util.Date());
+
+        Long timestampLong = System.currentTimeMillis()/1000;
+        timestamp = Long.toString(timestampLong);
     }
 }

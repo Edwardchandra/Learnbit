@@ -9,15 +9,18 @@ public class Course {
     private String courseName;
     private String courseSummary;
     private long coursePrice;
-    private Boolean courseAcceptance;
+    private String courseAcceptance;
     private int courseStudent;
     private String courseCategory;
     private String courseSubcategory;
     private String courseImageURL;
     private HashMap<String, Boolean> courseTime;
     private HashMap<String, Section> courseCurriculum;
+    private String createTime;
+    private String timestamp;
+    private String message;
 
-    public Course(String courseName, String courseSummary, long coursePrice, Boolean courseAcceptance, int courseStudent, String courseCategory, String courseSubcategory, String courseImageURL) {
+    public Course(String courseName, String courseSummary, long coursePrice, String courseAcceptance, int courseStudent, String courseCategory, String courseSubcategory, String courseImageURL, String createTime, String timestamp) {
         this.courseName = courseName;
         this.courseSummary = courseSummary;
         this.coursePrice = coursePrice;
@@ -26,6 +29,8 @@ public class Course {
         this.courseCategory = courseCategory;
         this.courseSubcategory = courseSubcategory;
         this.courseImageURL = courseImageURL;
+        this.createTime = createTime;
+        this.timestamp = timestamp;
     }
 
     public Course() {}
@@ -54,11 +59,11 @@ public class Course {
         this.coursePrice = coursePrice;
     }
 
-    public Boolean getCourseAcceptance() {
+    public String getCourseAcceptance() {
         return courseAcceptance;
     }
 
-    public void setCourseAcceptance(Boolean courseAcceptance) {
+    public void setCourseAcceptance(String courseAcceptance) {
         this.courseAcceptance = courseAcceptance;
     }
 
@@ -108,5 +113,29 @@ public class Course {
 
     public void setCourseCurriculum(HashMap<String, Section> courseCurriculum) {
         this.courseCurriculum = courseCurriculum;
+    }
+
+    public String getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(String createTime) {
+        this.createTime = createTime;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

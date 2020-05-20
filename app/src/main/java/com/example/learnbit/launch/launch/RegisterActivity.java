@@ -21,7 +21,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
 
-
     private androidx.appcompat.widget.Toolbar registerToolbar;
     private EditText nameET;
     private EditText emailET;
@@ -37,12 +36,12 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        registerToolbar = (androidx.appcompat.widget.Toolbar) findViewById(R.id.registerToolbar);
-        Button createAccountButton = (Button) findViewById(R.id.register_CreateAccountButton);
-        Button signInButton = (Button) findViewById(R.id.register_SignInButton);
-        nameET = (EditText) findViewById(R.id.register_NameET);
-        emailET = (EditText) findViewById(R.id.register_EmailET);
-        passwordET = (EditText) findViewById(R.id.register_PasswordET);
+        registerToolbar = findViewById(R.id.registerToolbar);
+        Button createAccountButton = findViewById(R.id.register_CreateAccountButton);
+        Button signInButton = findViewById(R.id.register_SignInButton);
+        nameET = findViewById(R.id.register_NameET);
+        emailET = findViewById(R.id.register_EmailET);
+        passwordET = findViewById(R.id.register_PasswordET);
 
         signInButton.setOnClickListener(this);
         createAccountButton.setOnClickListener(this);
@@ -116,17 +115,14 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
     private void createAccount(){
         firebaseAuth.createUserWithEmailAndPassword(emailET.getText().toString(), passwordET.getText().toString())
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()){
-                    user = firebaseAuth.getCurrentUser();
-                    updateUI(user);
-                }else{
-                    Toast.makeText(RegisterActivity.this, "Register Failed. Account already exist.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()){
+                        user = firebaseAuth.getCurrentUser();
+                        updateUI(user);
+                    }else{
+                        Toast.makeText(RegisterActivity.this, "Register Failed. Account already exist.", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void updateUI(FirebaseUser user){

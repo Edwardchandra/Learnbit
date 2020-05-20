@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.SupportingFilesActivity"></activity>
+        <activity android:name=".launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.SupportingFilesActivity"/>
         <activity
             android:name=".launch.teacher.home.search.SearchActivity"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -79,6 +79,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/profile_image_filepaths" />
         </provider>
+
+        <service
+            android:name=".launch.extension.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
     </application>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />

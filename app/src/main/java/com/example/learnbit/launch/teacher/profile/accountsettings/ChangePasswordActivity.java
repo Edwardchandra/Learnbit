@@ -46,13 +46,16 @@ public class ChangePasswordActivity extends AppCompatActivity {
             }
         });
 
+        setupToolbar();
+        setupFirebaseAuth();
+    }
+
+    private void setupToolbar(){
         if (getSupportActionBar() != null){
             getSupportActionBar().setTitle("Change Password");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
-
-        setupFirebaseAuth();
     }
     
     private void setupFirebaseAuth(){
@@ -66,23 +69,17 @@ public class ChangePasswordActivity extends AppCompatActivity {
 
         AuthCredential authCredential = EmailAuthProvider.getCredential(email, password);
         
-        user.reauthenticate(authCredential).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    user.updatePassword(newPasswordET.getText().toString()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()){
-                                Toast.makeText(ChangePasswordActivity.this, "Password changed succesfully", Toast.LENGTH_SHORT).show();
-                            }else{
-                                Toast.makeText(ChangePasswordActivity.this, "Please check your internet connection", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                }else{
-                    Toast.makeText(ChangePasswordActivity.this, "Your entered password didn't match your account password", Toast.LENGTH_SHORT).show();
-                }
+        user.reauthenticate(authCredential).addOnCompleteListener(task -> {
+            if (task.isSuccessful()){
+                user.updatePassword(newPasswordET.getText().toString()).addOnCompleteListener(task1 -> {
+                    if (task1.isSuccessful()){
+                        Toast.makeText(ChangePasswordActivity.this, "Password changed succesfully", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(ChangePasswordActivity.this, "Please check your internet connection", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }else{
+                Toast.makeText(ChangePasswordActivity.this, "Your entered password didn't match your account password", Toast.LENGTH_SHORT).show();
             }
         });
     }

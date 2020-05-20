@@ -24,8 +24,6 @@ public class SignInActivity extends AppCompatActivity {
 
     private androidx.appcompat.widget.Toolbar signInToolbar;
     private Button signInButton;
-    private Button signInWithGoogleButton;
-    private Button signInWithFacebookButton;
     private EditText emailET;
     private EditText passwordET;
 
@@ -36,12 +34,10 @@ public class SignInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 
-        signInToolbar = (androidx.appcompat.widget.Toolbar) findViewById(R.id.signInToolbar);
-        signInButton = (Button) findViewById(R.id.signIn_SignInButton);
-        signInWithGoogleButton = (Button) findViewById(R.id.signIn_googleSignInButton);
-        signInWithFacebookButton = (Button) findViewById(R.id.signIn_facebookSignInButton);
-        emailET = (EditText) findViewById(R.id.signIn_EmailET);
-        passwordET = (EditText) findViewById(R.id.signIn_PasswordET);
+        signInToolbar = findViewById(R.id.signInToolbar);
+        signInButton = findViewById(R.id.signIn_SignInButton);
+        emailET = findViewById(R.id.signIn_EmailET);
+        passwordET = findViewById(R.id.signIn_PasswordET);
 
 
         setSupportActionBar(signInToolbar);
@@ -52,20 +48,17 @@ public class SignInActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(isEmpty(emailET)){
-                    emailET.setError("Email must not be empty");
-                }else if(!isValidEmail(emailET)){
-                    emailET.setError("Email must be in valid format");
-                }else if(isEmpty(passwordET)){
-                    passwordET.setError("Password shouldn't be empty.");
-                }else if(passwordET.getText().toString().length() <= 6){
-                    passwordET.setError("Password must be more than 6 characters");
-                }else{
-                    signIn();
-                }
+        signInButton.setOnClickListener(v -> {
+            if(isEmpty(emailET)){
+                emailET.setError("Email must not be empty");
+            }else if(!isValidEmail(emailET)){
+                emailET.setError("Email must be in valid format");
+            }else if(isEmpty(passwordET)){
+                passwordET.setError("Password shouldn't be empty.");
+            }else if(passwordET.getText().toString().length() <= 6){
+                passwordET.setError("Password must be more than 6 characters");
+            }else{
+                signIn();
             }
         });
     }
@@ -90,15 +83,12 @@ public class SignInActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         firebaseAuth.signInWithEmailAndPassword(emailET.getText().toString(), passwordET.getText().toString())
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()){
-                            FirebaseUser user = firebaseAuth.getCurrentUser();
-                            updateUI(user);
-                        }else{
-                            Toast.makeText(SignInActivity.this, "Sign In Failed", Toast.LENGTH_SHORT).show();
-                        }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()){
+                        FirebaseUser user = firebaseAuth.getCurrentUser();
+                        updateUI(user);
+                    }else{
+                        Toast.makeText(SignInActivity.this, "Sign In Failed", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
