@@ -3,7 +3,9 @@ package com.example.learnbit.launch.launch;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -13,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.learnbit.R;
+import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -29,6 +32,9 @@ public class SignInActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
 
+    private static final String detailPreference = "LOGIN_PREFERENCE";
+    private String role;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +44,6 @@ public class SignInActivity extends AppCompatActivity {
         signInButton = findViewById(R.id.signIn_SignInButton);
         emailET = findViewById(R.id.signIn_EmailET);
         passwordET = findViewById(R.id.signIn_PasswordET);
-
 
         setSupportActionBar(signInToolbar);
 
@@ -94,9 +99,23 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void updateUI(FirebaseUser user){
+        getPreferenceData();
         if (user!=null){
-            Intent intent = new Intent(this, TeacherMainActivity.class);
-            startActivity(intent);
+            if (role.equals("student")){
+                Intent intent = new Intent(this, StudentMainActivity.class);
+                startActivity(intent);
+            }else if (role.equals("teacher")){
+                Intent intent = new Intent(this, TeacherMainActivity.class);
+                startActivity(intent);
+            }
+        }
+    }
+
+    private void getPreferenceData(){
+        if (getApplicationContext()!=null){
+            SharedPreferences preferences = getApplicationContext().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
+            role = preferences.getString("role", "");
         }
     }
 }
+

@@ -1,6 +1,5 @@
 package com.example.learnbit.launch.teacher.home.addcourse.secondsection.adapter;
 
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -10,9 +9,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TimePicker;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.home.addcourse.secondsection.AddSecondSectionActivity;
@@ -41,7 +38,7 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
     @Override
     public CourseTimeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.time_picker, parent, false);
+        View view = layoutInflater.inflate(R.layout.item_time_picker_edittext, parent, false);
 
         return new CourseTimeAdapter.CourseTimeViewHolder(view);
     }
@@ -77,7 +74,7 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
         public CourseTimeViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            courseTimeET = (EditText) itemView.findViewById(R.id.addCourse_CourseTime);
+            courseTimeET = itemView.findViewById(R.id.addCourse_CourseTime);
             courseTimeET.setOnClickListener(this);
         }
 
@@ -85,13 +82,10 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
         public void onClick(View v) {
             TimePickerFragment timePickerFragment = new TimePickerFragment();
 
-            timePickerFragment.timeSetListener = new TimePickerDialog.OnTimeSetListener(){
-                @Override
-                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                    calendar.set(Calendar.MINUTE, minute);
-                    updateTime();
-                }
+            timePickerFragment.timeSetListener = (view, hourOfDay, minute) -> {
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                calendar.set(Calendar.MINUTE, minute);
+                updateTime();
             };
 
             timePickerFragment.show(((AddSecondSectionActivity)context).getSupportFragmentManager(), "timePicker");

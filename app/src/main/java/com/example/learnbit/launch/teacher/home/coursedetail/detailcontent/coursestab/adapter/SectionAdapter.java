@@ -13,7 +13,6 @@ import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.cours
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -34,7 +33,7 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
     @Override
     public SectionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.teacher_course_sections, parent, false);
+        View view = inflater.inflate(R.layout.item_teacher_course_sections, parent, false);
 
         return new SectionViewHolder(view);
     }

@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.example.learnbit.R;
-import com.example.learnbit.launch.teacher.home.addcourse.secondsection.adapter.CourseTimeAdapter;
 import com.example.learnbit.launch.teacher.home.addcourse.thirdsection.model.Benefit;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ public class CourseBenefitAdapter extends RecyclerView.Adapter<CourseBenefitAdap
     @Override
     public CourseBenefitAdapter.CourseBenefitViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.benefits_view, parent, false);
+        View view = layoutInflater.inflate(R.layout.item_benefits_edittext, parent, false);
 
         return new CourseBenefitAdapter.CourseBenefitViewHolder(view);
     }

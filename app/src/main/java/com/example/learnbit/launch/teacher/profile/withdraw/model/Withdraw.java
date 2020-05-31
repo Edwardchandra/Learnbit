@@ -9,10 +9,9 @@ public class Withdraw {
     private int amount;
     private String userUid;
     private String dateTime;
-    private String message;
     private String timestamp;
 
-    public Withdraw(String bankName, int bankNumber, String destinationName, String isSent, int amount, String userUid, String dateTime, String message, String timestamp) {
+    public Withdraw(String bankName, int bankNumber, String destinationName, String isSent, int amount, String userUid, String dateTime, String timestamp) {
         this.bankName = bankName;
         this.bankNumber = bankNumber;
         this.destinationName = destinationName;
@@ -20,8 +19,10 @@ public class Withdraw {
         this.amount = amount;
         this.userUid = userUid;
         this.dateTime = dateTime;
-        this.message = message;
         this.timestamp = timestamp;
+    }
+
+    public Withdraw() {
     }
 
     public String getBankName() {
@@ -78,14 +79,6 @@ public class Withdraw {
 
     public void setDateTime(String dateTime) {
         this.dateTime = dateTime;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 
     public String getTimestamp() {

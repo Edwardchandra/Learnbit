@@ -3,7 +3,7 @@ package com.example.learnbit.launch.teacher.profile;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,11 +22,10 @@ import com.example.learnbit.R;
 import com.example.learnbit.launch.launch.MainActivity;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
 import com.example.learnbit.launch.model.userdata.User;
-import com.example.learnbit.launch.teacher.profile.accountsettings.ChangePasswordActivity;
+import com.example.learnbit.launch.student.StudentMainActivity;
+import com.example.learnbit.launch.reusableactivity.ChangePasswordActivity;
 import com.example.learnbit.launch.teacher.profile.accountsettings.EditProfileActivity;
 import com.example.learnbit.launch.teacher.profile.withdraw.WithdrawActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -51,6 +50,8 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
     private StorageReference storageReference;
 
     private User users = new User();
+
+    private static final String detailPreference = "LOGIN_PREFERENCE";
 
     public TeacherProfileFragment() {
         // Required empty public constructor
@@ -80,6 +81,7 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         editProfileButton.setOnClickListener(this);
         changePasswordButton.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
+        switchButton.setOnClickListener(this);
 
         teacherProfileImageView.setClipToOutline(true);
 
@@ -142,19 +144,11 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
     }
 
     private void retrieveDataFromStorage(){
-        storageReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-                if (getActivity() != null){
-                    Glide.with(getActivity()).load(uri).into(teacherProfileImageView);
-                }
+        storageReference.getDownloadUrl().addOnSuccessListener(uri -> {
+            if (getActivity() != null){
+                Glide.with(getActivity()).load(uri).into(teacherProfileImageView);
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "failed to retrieve image", Toast.LENGTH_SHORT).show();
-            }
-        });
+        }).addOnFailureListener(e -> Toast.makeText(getContext(), "failed to retrieve image", Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -180,6 +174,11 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
             case R.id.teacherProfile_ShareButton:
                 shareAction();
                 break;
+            case R.id.teacherProfile_SwitchButton:
+                changePreferenceData("student");
+                Intent switchIntent = new Intent(getContext(), StudentMainActivity.class);
+                startActivity(switchIntent);
+                break;
             default:
                 Toast.makeText(getContext(), "Nothing happened", Toast.LENGTH_SHORT).show();
         }
@@ -193,4 +192,15 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
         startActivity(Intent.createChooser(sharingIntent, "Share via"));
     }
+
+    private void changePreferenceData(String role){
+        if (getActivity()!=null){
+            SharedPreferences preferences = getActivity().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("role", role);
+            editor.apply();
+        }
+    }
+
 }

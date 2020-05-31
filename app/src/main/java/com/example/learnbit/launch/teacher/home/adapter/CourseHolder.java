@@ -42,7 +42,6 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
 
     public void setCourse(Course course){
         courseName = course.getCourseName();
-        String courseStudent = String.valueOf(course.getCourseStudent());
         String courseImageURL = course.getCourseImageURL();
         String courseAcceptance = course.getCourseAcceptance();
         HashMap<String, Boolean> courseTime = course.getCourseTime();
@@ -64,8 +63,15 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
             }
         }
 
+        if (course.getCourseStudent() != null){
+            HashMap<String, String> courseStudent = course.getCourseStudent();
+
+            teacherCourseStudentCount.setText(courseStudent.size() + " Student(s)");
+        }else{
+            teacherCourseStudentCount.setText("Your course has no student yet.");
+        }
+
         teacherCourseName.setText(courseName);
-        teacherCourseStudentCount.setText(courseStudent + " Student(s)");
 
         Glide.with(context).load(courseImageURL).into(teacherCourseImageView);
     }

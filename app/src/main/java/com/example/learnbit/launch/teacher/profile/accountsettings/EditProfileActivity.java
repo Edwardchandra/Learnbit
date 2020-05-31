@@ -155,10 +155,14 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 pickFromGallery();
                 break;
             case R.id.editProfile_SaveButton:
-                updateProfileData();
-                uploadProfileImage();
-                Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
-                startActivity(intent);
+                if (profilePassword.getText().toString().isEmpty()) {
+                    profilePassword.setError("Password shouldn't be empty");
+                }else{
+                    updateProfileData();
+                    uploadProfileImage();
+                    Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
+                    startActivity(intent);
+                }
                 break;
             default:
                 Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();

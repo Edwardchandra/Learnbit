@@ -104,6 +104,20 @@
 
     <!--    Testing Purpose-->
     <string name="reviewIpsum">Definitely a recommendation to everyone who wants to learn about a space. The teacher is nice and answer all of my questions with a easy to understand, uncomplicated answer with an example.</string>
+    <string name="price">IDR  %1$d</string>
+
+    <string name="divider">%1$s - %2$s</string>
+
+    <string name="schedule_availability">%1$d Schedule Available</string>
+
+    <string name="schedule_time">Every %1$s at %2$s </string>
+
+    <string name="teacher_rating">%1$,.1f Average Rating</string>
+
+    <string name="course_count">Teach in %1$d Course(s)</string>
+
+    <string name="course_applied">Course Applied</string>
+
     <string-array name="bank_array">
         <item>Bank BCA</item>
         <item>Bank BNI</item>
@@ -168,36 +182,33 @@
         <item>Photo and Video Editing</item>
     </string-array>
 
+
+    <!--    WIDE USAGE-->
     <string-array name="mathematics_array">
         <item>General Mathematics</item>
         <item>Discrete Mathematics</item>
         <item>Statistic</item>
     </string-array>
-
     <string-array name="natural_array">
-        <item>Science Mathematics</item>
+        <item>Mathematical Sciences</item>
         <item>Biology</item>
         <item>Chemistry</item>
         <item>Physics</item>
     </string-array>
-
     <string-array name="social_array">
         <item>History</item>
         <item>Geography</item>
         <item>Sociology</item>
         <item>Economics</item>
     </string-array>
-
     <string-array name="art_array">
         <item>Music</item>
         <item>Painting and Sculpture</item>
         <item>Craftsmanship</item>
     </string-array>
-
     <string-array name="civic_array">
         <item>Political Studies</item>
     </string-array>
-
     <string-array name="course_type_array">
         <item>Video Call</item>
         <item>Quiz</item>

@@ -86,12 +86,12 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_second_section);
 
-        startDateET = (EditText) findViewById(R.id.addCourse_CourseStartDate);
-        endDateET = (EditText) findViewById(R.id.addCourse_CourseEndDate);
-        Button nextButton = (Button) findViewById(R.id.addCourse_NextButton);
-        Button addCourseTimeButton = (Button) findViewById(R.id.addCourse_AddNewCourseTimeButton);
-        RecyclerView courseTimeRecyclerView = (RecyclerView) findViewById(R.id.addCourse_CourseTimeRecyclerView);
-        secondSectionToolbar = (Toolbar) findViewById(R.id.secondSectionToolbar);
+        startDateET = findViewById(R.id.addCourse_CourseStartDate);
+        endDateET = findViewById(R.id.addCourse_CourseEndDate);
+        Button nextButton = findViewById(R.id.addCourse_NextButton);
+        Button addCourseTimeButton = findViewById(R.id.addCourse_AddNewCourseTimeButton);
+        RecyclerView courseTimeRecyclerView = findViewById(R.id.addCourse_CourseTimeRecyclerView);
+        secondSectionToolbar = findViewById(R.id.secondSectionToolbar);
 
         calendar = Calendar.getInstance();
 
@@ -106,7 +106,7 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         courseTimeRecyclerView.setAdapter(courseTimeAdapter);
 
         for (int i=0;i<7;i++){
-            scheduleCheckbox[i] = (CheckBox) findViewById(scheduleCheckboxInt[i]);
+            scheduleCheckbox[i] = findViewById(scheduleCheckboxInt[i]);
         }
 
         setupToolbar();

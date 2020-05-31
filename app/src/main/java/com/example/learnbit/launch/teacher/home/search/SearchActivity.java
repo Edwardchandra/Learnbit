@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.teacher.home.adapter.CourseHolder;
+import com.example.learnbit.launch.teacher.home.search.adapter.SearchHolder;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -80,7 +81,7 @@ public class SearchActivity extends AppCompatActivity {
             @NonNull
             @Override
             public CourseHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.teacher_course_list, parent, false);
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_teacher_course_list, parent, false);
 
                 return new CourseHolder(view);
             }

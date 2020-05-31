@@ -209,7 +209,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
 
         databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).push();
 
-        databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, "pending", 0, courseCategory, courseSubcategory, courseImageURL, dateTime, timestamp));
+        databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, "pending", courseCategory, courseSubcategory, courseImageURL, dateTime, timestamp, 0));
         databaseReference.child("courseDate").setValue(new Date(courseStartDate, courseEndDate));
         databaseReference.child("courseSchedule").setValue(courseSchedule);
 

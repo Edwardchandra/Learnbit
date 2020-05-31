@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Content;
@@ -42,7 +41,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
     @Override
     public ContentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.teacher_course_sections_contents, parent, false);
+        View view = inflater.inflate(R.layout.item_teacher_course_contents, parent, false);
 
         return new ContentViewHolder(view);
     }

@@ -16,4 +16,7 @@
     <color name="orangeColor">#F0AF2D</color>
     <color name="darkOrangeColor">#FF6600</color>
     <color name="placeholder">#DDDDDD</color>
+    <color name="greenColor">#4CAF50</color>
+    <color name="darkGreenColor">#009688</color>
+    <color name="redColor">#F44336</color>
 </resources>

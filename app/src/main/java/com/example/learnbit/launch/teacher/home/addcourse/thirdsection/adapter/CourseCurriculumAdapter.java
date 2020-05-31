@@ -33,7 +33,7 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
     @Override
     public CourseCurriculumAdapter.CourseCurriculumViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.curriculum_view, parent, false);
+        View view = layoutInflater.inflate(R.layout.item_curriculum_edittext, parent, false);
 
         return new CourseCurriculumAdapter.CourseCurriculumViewHolder(view);
     }
