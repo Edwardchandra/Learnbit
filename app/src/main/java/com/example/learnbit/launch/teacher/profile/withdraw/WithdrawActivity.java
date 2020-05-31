@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.teacher.home.addcourse.fifthsection.model.Date;
+import com.example.learnbit.launch.teacher.profile.withdraw.history.WithdrawHistoryActivity;
 import com.example.learnbit.launch.teacher.profile.withdraw.model.Withdraw;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -136,7 +138,7 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
                             Log.d("exception", "not a number");
                         }
                         
-                        databaseReference.setValue(new Withdraw(spinnerValue, accountNumber, accountNameET.getText().toString(), "pending", amount, user.getUid(), dateTime, "", timestamp));
+                        databaseReference.setValue(new Withdraw(spinnerValue, accountNumber, accountNameET.getText().toString(), "pending", amount, user.getUid(), dateTime, timestamp));
                         Toast.makeText(WithdrawActivity.this, "The withdraw process will take 2 - 3 days to be finished as we need to authenticate", Toast.LENGTH_SHORT).show();
                     }else{
                         Toast.makeText(WithdrawActivity.this, "Your entered password didn't match your account password", Toast.LENGTH_SHORT).show();
@@ -203,8 +205,12 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            finish(); // close this activity and return to preview activity (if there is any)
+            finish();
+        } else if(item.getItemId() == R.id.withdraw_menu){
+            Intent intent = new Intent(this, WithdrawHistoryActivity.class);
+            startActivity(intent);
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -215,5 +221,11 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
         } else {
             Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.teacher_withdraw_menu, menu);
+        return true;
     }
 }

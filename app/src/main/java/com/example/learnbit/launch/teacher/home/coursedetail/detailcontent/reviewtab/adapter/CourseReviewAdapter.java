@@ -27,7 +27,7 @@ public class CourseReviewAdapter extends RecyclerView.Adapter<CourseReviewAdapte
     @Override
     public CourseReviewAdapter.CourseReviewViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.teacher_course_reviews, parent, false);
+        View view = layoutInflater.inflate(R.layout.item_teacher_course_reviews, parent, false);
 
         return new CourseReviewAdapter.CourseReviewViewHolder(view);
     }

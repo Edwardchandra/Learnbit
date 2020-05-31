@@ -26,7 +26,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText emailET;
     private EditText passwordET;
 
-
     private String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;

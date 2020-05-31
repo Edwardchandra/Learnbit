@@ -25,7 +25,7 @@ public class CourseTermsAdapter extends RecyclerView.Adapter<CourseTermsAdapter.
     @Override
     public CourseTermsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View view = layoutInflater.inflate(R.layout.terms_view, parent, false);
+        View view = layoutInflater.inflate(R.layout.item_terms, parent, false);
 
         return new CourseTermsViewHolder(view);
     }

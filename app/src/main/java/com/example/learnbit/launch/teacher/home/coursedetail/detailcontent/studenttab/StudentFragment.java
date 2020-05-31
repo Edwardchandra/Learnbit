@@ -29,6 +29,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class StudentFragment extends Fragment {
@@ -101,16 +102,19 @@ public class StudentFragment extends Fragment {
                     course = ds.getValue(Course.class);
 
                     if (course != null){
-                        courseStudent = course.getCourseStudent();
+                        if (course.getCourseStudent()!=null){
+                            HashMap<String, String> courseStudent = course.getCourseStudent();
 
-                        Log.d("courseStudent", course.getCourseStudent() + " ");
-
-                        if (courseStudent == 0){
+                            if (courseStudent.size() == 0){
+                                courseStudentRecyclerView.setVisibility(View.INVISIBLE);
+                                courseStudentNoStudentTV.setVisibility(View.VISIBLE);
+                            }else{
+                                courseStudentRecyclerView.setVisibility(View.VISIBLE);
+                                courseStudentNoStudentTV.setVisibility(View.INVISIBLE);
+                            }
+                        }else{
                             courseStudentRecyclerView.setVisibility(View.INVISIBLE);
                             courseStudentNoStudentTV.setVisibility(View.VISIBLE);
-                        }else{
-                            courseStudentRecyclerView.setVisibility(View.VISIBLE);
-                            courseStudentNoStudentTV.setVisibility(View.INVISIBLE);
                         }
                     }
                 }

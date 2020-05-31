@@ -43,10 +43,8 @@ public class CourseDetailActivity extends AppCompatActivity {
     private static final String detailPreference = "DETAIL_PREFERENCE";
     private String courseName;
 
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference databaseReference;
     private Query query;
 
     private Course course = new Course();
@@ -72,17 +70,15 @@ public class CourseDetailActivity extends AppCompatActivity {
     }
 
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
 
         user = firebaseAuth.getCurrentUser();
     }
 
     private void retrieveData(){
-        databaseReference = firebaseDatabase.getReference("Course");
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
         query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
-
-        Log.d("courseName", courseName);
 
         query.addValueEventListener(new ValueEventListener() {
             @Override
@@ -101,7 +97,7 @@ public class CourseDetailActivity extends AppCompatActivity {
                             linearLayout.setVisibility(View.INVISIBLE);
                         }
                         courseNameET.setText(course.getCourseName());
-                        courseCategoryET.setText(course.getCourseCategory() + " - " + course.getCourseSubcategory());
+                        courseCategoryET.setText(getString(R.string.divider, course.getCourseCategory(), course.getCourseSubcategory()));
                     }
                 }
             }

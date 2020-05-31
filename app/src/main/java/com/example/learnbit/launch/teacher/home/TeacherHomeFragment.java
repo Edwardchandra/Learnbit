@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,18 +19,16 @@ import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.teacher.home.adapter.CourseHolder;
 import com.example.learnbit.launch.teacher.home.addcourse.firstsection.AddFirstSectionActivity;
+import com.example.learnbit.launch.teacher.home.notification.NotificationActivity;
 import com.example.learnbit.launch.teacher.home.search.SearchActivity;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -91,7 +88,7 @@ public class TeacherHomeFragment extends Fragment implements View.OnClickListene
             @NonNull
             @Override
             public CourseHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.teacher_course_list, parent, false);
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_teacher_course_list, parent, false);
 
                 return new CourseHolder(view);
             }
@@ -120,7 +117,8 @@ public class TeacherHomeFragment extends Fragment implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.teacherHome_NotificationButton:
-                Toast.makeText(getActivity(), "amazingg", Toast.LENGTH_SHORT).show();
+                Intent notificationIntent = new Intent(getContext(), NotificationActivity.class);
+                startActivity(notificationIntent);
                 break;
             case R.id.teacherHome_AddCourseButton:
                 Intent intent = new Intent(getContext(), AddFirstSectionActivity.class);

@@ -1,21 +1,20 @@
-package com.example.learnbit.launch.teacher.profile.accountsettings;
+package com.example.learnbit.launch.reusableactivity;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.learnbit.R;
+import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
-import com.example.learnbit.launch.teacher.profile.TeacherProfileFragment;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,22 +28,20 @@ public class ChangePasswordActivity extends AppCompatActivity {
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
 
+    private static final String detailPreference = "LOGIN_PREFERENCE";
+    private String role;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
         
-        oldPasswordET = (EditText) findViewById(R.id.changePassword_OldPassword);
-        repeatOldPasswordET = (EditText) findViewById(R.id.changePassword_OldPasswordRepeat);
-        newPasswordET = (EditText) findViewById(R.id.changePassword_NewPassword);
-        saveChangesButton = (Button) findViewById(R.id.changePassword_SaveButton);
+        oldPasswordET = findViewById(R.id.changePassword_OldPassword);
+        repeatOldPasswordET = findViewById(R.id.changePassword_OldPasswordRepeat);
+        newPasswordET = findViewById(R.id.changePassword_NewPassword);
+        saveChangesButton = findViewById(R.id.changePassword_SaveButton);
 
-        saveChangesButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkEditText();
-            }
-        });
+        saveChangesButton.setOnClickListener(v -> checkEditText());
 
         setupToolbar();
         setupFirebaseAuth();
@@ -97,8 +94,14 @@ public class ChangePasswordActivity extends AppCompatActivity {
             newPasswordET.setError("New password shouldn't be empty");
         }else{
             changePassword();
-            Intent intent = new Intent(this, TeacherMainActivity.class);
-            startActivity(intent);
+            getPreferenceData();
+            if (role.equals("student")){
+                Intent intent = new Intent(this, StudentMainActivity.class);
+                startActivity(intent);
+            }else if (role.equals("teacher")){
+                Intent intent = new Intent(this, TeacherMainActivity.class);
+                startActivity(intent);
+            }
         }
     }
 
@@ -108,5 +111,12 @@ public class ChangePasswordActivity extends AppCompatActivity {
             finish(); // close this activity and return to preview activity (if there is any)
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getPreferenceData(){
+        if (getApplicationContext()!=null){
+            SharedPreferences preferences = getApplicationContext().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
+            role = preferences.getString("role", "");
+        }
     }
 }

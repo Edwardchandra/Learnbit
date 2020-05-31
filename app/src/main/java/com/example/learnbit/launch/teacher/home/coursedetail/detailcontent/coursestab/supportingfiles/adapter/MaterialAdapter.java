@@ -26,7 +26,7 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.Materi
     @Override
     public MaterialViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.supporting_files_view, parent, false);
+        View view = inflater.inflate(R.layout.item_teacher_supporting_files, parent, false);
 
         return new MaterialViewHolder(view);
     }

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -47,6 +48,8 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
     private double rating = 5.0;
     private long balance = 200000;
 
+    private static final String detailPreference = "LOGIN_PREFERENCE";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +78,6 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
             String deviceToken = instanceIdResult.getToken();
 
             databaseReference.child(user.getUid()).setValue(new User(name, email, deviceToken));
-            databaseReference.child(user.getUid()).child("teacher").setValue(new Teacher(balance, "", rating));
         }).addOnFailureListener(e -> {
             Toast.makeText(this, "Failed to save value.", Toast.LENGTH_SHORT).show();
         });
@@ -108,6 +110,10 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.role_StudentButton:
+                setupFirebaseDatabase();
+                setupFirebaseStorage();
+                uploadProfileImage();
+                savePreferenceData("student");
                 Intent studentIntent = new Intent(getApplicationContext(), StudentOnboardActivity.class);
                 startActivity(studentIntent);
                 break;
@@ -115,11 +121,23 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
                 setupFirebaseDatabase();
                 setupFirebaseStorage();
                 uploadProfileImage();
+                savePreferenceData("teacher");
+                databaseReference.child(user.getUid()).child("teacher").setValue(new Teacher(balance, "", rating));
                 Intent teacherIntent = new Intent(getApplicationContext(), TeacherMainActivity.class);
                 startActivity(teacherIntent);
                 break;
             default:
                 Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void savePreferenceData(String role){
+        if (getIntent()!=null){
+            SharedPreferences preferences = getSharedPreferences(detailPreference, MODE_PRIVATE);
+
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("role", role);
+            editor.apply();
         }
     }
 }
