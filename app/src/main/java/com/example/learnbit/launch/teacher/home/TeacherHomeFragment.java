@@ -127,9 +127,6 @@ public class TeacherHomeFragment extends Fragment implements View.OnClickListene
             case R.id.teacherHome_SearchBar:
                 Intent searchIntent = new Intent(getContext(), SearchActivity.class);
                 startActivity(searchIntent);
-//                if (getActivity() != null){
-//                    getActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-//                }
                 break;
             default:
                 Toast.makeText(getContext(), "nothing happened", Toast.LENGTH_SHORT).show();

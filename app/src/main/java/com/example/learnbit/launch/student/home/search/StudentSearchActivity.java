@@ -20,8 +20,7 @@ import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
-import com.example.learnbit.launch.student.home.search.adapter.StudentSearchHolder;
-import com.example.learnbit.launch.teacher.home.adapter.CourseHolder;
+import com.example.learnbit.launch.student.home.search.adapter.StudentSearchAdapter;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,8 +31,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -41,16 +38,13 @@ public class StudentSearchActivity extends AppCompatActivity {
     private Toolbar searchToolbar;
     private RecyclerView searchRecyclerView;
 
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser user;
-
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
 
-    private FirebaseRecyclerOptions<Course> firebaseRecyclerOptions;
-    private FirebaseRecyclerAdapter<Course, StudentSearchHolder> firebaseRecyclerAdapter;
-
+    private ArrayList<Course> courseArrayList = new ArrayList<>();
     private ArrayList<String> keyArrayList = new ArrayList<>();
+
+    private StudentSearchAdapter studentSearchAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,61 +56,74 @@ public class StudentSearchActivity extends AppCompatActivity {
 
         setupToolbar();
         setupFirebase();
+        setupRecyclerView();
         retrieveData();
     }
 
-    private void setupToolbar(){
+    private void setupToolbar() {
         setSupportActionBar(searchToolbar);
 
-        if (getSupportActionBar() != null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
     }
 
-    private void setupRecyclerView(){
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Course, StudentSearchHolder>(firebaseRecyclerOptions) {
-            @Override
-            protected void onBindViewHolder(@NonNull StudentSearchHolder holder, int position, @NonNull Course model) {
-                holder.setCourse(keyArrayList.get(position), model);
-            }
-
-            @NonNull
-            @Override
-            public StudentSearchHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_student_search, parent, false);
-
-                return new StudentSearchHolder(view);
-            }
-        };
+    private void setupRecyclerView() {
+        studentSearchAdapter = new StudentSearchAdapter(courseArrayList, keyArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         searchRecyclerView.setLayoutManager(layoutManager);
-        searchRecyclerView.setAdapter(firebaseRecyclerAdapter);
+        searchRecyclerView.setAdapter(studentSearchAdapter);
     }
 
-    private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+    private void setupFirebase() {
         firebaseDatabase = FirebaseDatabase.getInstance();
 
-        user = firebaseAuth.getCurrentUser();
         databaseReference = firebaseDatabase.getReference("Course");
     }
 
     private void retrieveData(){
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Course");
-
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String key = "";
+
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    keyArrayList.add(ds.getKey());
+                    key = ds.getKey();
+
+                    retrieveCourseData(key);
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(getApplicationContext(), "Failed to load database", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void retrieveCourseData(String key){
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(key);
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds: dataSnapshot.getChildren()){
+                    Course course = ds.getValue(Course.class);
+
+                    if (course!=null){
+                        keyArrayList.add(key);
+                        courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating()));
+
+                        studentSearchAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getApplicationContext(), "Failed to fetch database data.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -150,28 +157,12 @@ public class StudentSearchActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
 
-                for (int i=0;i<keyArrayList.size();i++) {
-                    Query query1 = databaseReference.child(keyArrayList.get(i)).orderByChild("courseName").startAt(query);
-                    firebaseRecyclerOptions = new FirebaseRecyclerOptions.Builder<Course>().setQuery(query1, Course.class).build();
-
-                    setupRecyclerView();
-
-                    firebaseRecyclerAdapter.startListening();
-                }
-
-                return true;
+                return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                for (int i=0;i<keyArrayList.size();i++) {
-                    Query query1 = databaseReference.child(keyArrayList.get(i)).orderByChild("courseName").startAt(newText);
-                    firebaseRecyclerOptions = new FirebaseRecyclerOptions.Builder<Course>().setQuery(query1, Course.class).build();
-
-                    setupRecyclerView();
-
-                    firebaseRecyclerAdapter.startListening();
-                }
+                filter(newText);
 
                 return true;
             }
@@ -180,25 +171,23 @@ public class StudentSearchActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    private void filter(String text){
+        ArrayList<Course> tempArrayList = new ArrayList<>();
+        for(Course course : courseArrayList){
+
+            if(course.getCourseName().toLowerCase().contains(text)){
+                tempArrayList.add(course);
+            }
+        }
+
+        studentSearchAdapter.updateList(tempArrayList);
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        if (firebaseRecyclerAdapter!=null){
-            firebaseRecyclerAdapter.stopListening();
-        }
     }
 }

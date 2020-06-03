@@ -38,17 +38,14 @@ public class StudentFragment extends Fragment {
     private TextView courseStudentNoStudentTV;
 
     CourseStudentAdapter courseStudentAdapter;
-    ArrayList<CourseStudent> courseStudentArrayList;
+    ArrayList<CourseStudent> courseStudentArrayList = new ArrayList<>();
 
     private static final String detailPreference = "DETAIL_PREFERENCE";
 
-    private String courseName;
-    private int courseStudent;
+    private String courseName, courseKey = "";
 
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference databaseReference;
 
     private Course course = new Course();
 
@@ -64,11 +61,7 @@ public class StudentFragment extends Fragment {
 
         setupFirebase();
         retrieveData();
-
-        courseStudentAdapter = new CourseStudentAdapter(courseStudentArrayList);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-        courseStudentRecyclerView.setLayoutManager(layoutManager);
-        courseStudentRecyclerView.setAdapter(courseStudentAdapter);
+        setupRecyclerView();
 
         return view;
     }
@@ -81,7 +74,7 @@ public class StudentFragment extends Fragment {
     }
 
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
 
         user = firebaseAuth.getCurrentUser();
@@ -90,18 +83,17 @@ public class StudentFragment extends Fragment {
     private void retrieveData(){
         getPreferenceData();
 
-        databaseReference = firebaseDatabase.getReference("Course");
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
         Query query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
-
-        Log.d("courseName", courseName);
 
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds: dataSnapshot.getChildren()){
+                    String courseKey = ds.getKey();
                     course = ds.getValue(Course.class);
 
-                    if (course != null){
+                    if (course != null && courseKey != null){
                         if (course.getCourseStudent()!=null){
                             HashMap<String, String> courseStudent = course.getCourseStudent();
 
@@ -111,6 +103,14 @@ public class StudentFragment extends Fragment {
                             }else{
                                 courseStudentRecyclerView.setVisibility(View.VISIBLE);
                                 courseStudentNoStudentTV.setVisibility(View.INVISIBLE);
+
+                                for (HashMap.Entry<String, String> entry : courseStudent.entrySet()){
+                                    String studentUID = entry.getValue();
+
+                                    courseStudentArrayList.add(new CourseStudent(studentUID, courseKey));
+                                }
+
+                                courseStudentAdapter.notifyDataSetChanged();
                             }
                         }else{
                             courseStudentRecyclerView.setVisibility(View.INVISIBLE);
@@ -125,6 +125,13 @@ public class StudentFragment extends Fragment {
 
             }
         });
+    }
+
+    private void setupRecyclerView(){
+        courseStudentAdapter = new CourseStudentAdapter(courseStudentArrayList);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
+        courseStudentRecyclerView.setLayoutManager(layoutManager);
+        courseStudentRecyclerView.setAdapter(courseStudentAdapter);
     }
 
 }

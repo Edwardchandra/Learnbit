@@ -15,6 +15,7 @@
         android:background="@android:color/white">
 
         <ImageView
+            android:scaleType="centerCrop"
             android:id="@+id/teacherCourse.StudentImage"
             android:layout_width="65dp"
             android:layout_height="65dp"
@@ -42,7 +43,7 @@
                 android:id="@+id/teacherCourse.StudentName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="10dp"
                 android:ellipsize="end"
                 android:fontFamily="sans-serif-medium"
                 android:inputType="none"
@@ -50,15 +51,6 @@
                 android:text="Rudy Salim Prestige Motors"
                 android:textColor="@android:color/black"
                 android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/teacherCourse.StudentStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:text="3 Students"
-                android:textColor="@color/darkGray"
-                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/teacherCourse.StudentTime"

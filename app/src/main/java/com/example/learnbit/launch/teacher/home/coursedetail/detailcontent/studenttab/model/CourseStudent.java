@@ -2,47 +2,30 @@ package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.stud
 
 public class CourseStudent {
 
-    private int studentImage;
-    private String studentName;
-    private String studentStatus;
-    private String studentTime;
+    private String studentUID;
+    private String courseKey;
 
-    public CourseStudent(int studentImage, String studentName, String studentStatus, String studentTime) {
-        this.studentImage = studentImage;
-        this.studentName = studentName;
-        this.studentStatus = studentStatus;
-        this.studentTime = studentTime;
+    public CourseStudent(String studentUID, String courseKey) {
+        this.studentUID = studentUID;
+        this.courseKey = courseKey;
     }
 
-    public int getStudentImage() {
-        return studentImage;
+    public CourseStudent() {
     }
 
-    public void setStudentImage(int studentImage) {
-        this.studentImage = studentImage;
+    public String getCourseKey() {
+        return courseKey;
     }
 
-    public String getStudentName() {
-        return studentName;
+    public void setCourseKey(String courseKey) {
+        this.courseKey = courseKey;
     }
 
-    public void setStudentName(String studentName) {
-        this.studentName = studentName;
+    public String getStudentUID() {
+        return studentUID;
     }
 
-    public String getStudentStatus() {
-        return studentStatus;
-    }
-
-    public void setStudentStatus(String studentStatus) {
-        this.studentStatus = studentStatus;
-    }
-
-    public String getStudentTime() {
-        return studentTime;
-    }
-
-    public void setStudentTime(String studentTime) {
-        this.studentTime = studentTime;
+    public void setStudentUID(String studentUID) {
+        this.studentUID = studentUID;
     }
 }

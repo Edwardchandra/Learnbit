@@ -44,6 +44,19 @@ public class Course {
         this.courseRating = courseRating;
     }
 
+    public Course(String courseName, long coursePrice, String courseImageURL, HashMap<String, String> courseStudent, float courseRating) {
+        this.courseName = courseName;
+        this.coursePrice = coursePrice;
+        this.courseImageURL = courseImageURL;
+        this.courseStudent = courseStudent;
+        this.courseRating = courseRating;
+    }
+
+    public Course(String courseName, String courseImageURL) {
+        this.courseName = courseName;
+        this.courseImageURL = courseImageURL;
+    }
+
     public Course() {}
 
     public String getCourseName() {

@@ -107,6 +107,9 @@ public class SignInActivity extends AppCompatActivity {
             }else if (role.equals("teacher")){
                 Intent intent = new Intent(this, TeacherMainActivity.class);
                 startActivity(intent);
+            }else{
+                Intent intent = new Intent(this, RoleActivity.class);
+                startActivity(intent);
             }
         }
     }

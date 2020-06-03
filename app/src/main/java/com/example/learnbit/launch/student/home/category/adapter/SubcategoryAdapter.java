@@ -8,10 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
+import com.example.learnbit.launch.student.course.mycoursedetail.MyCourseDetailActivity;
 import com.example.learnbit.launch.student.home.coursedetails.StudentCourseDetailActivity;
 
 import java.util.ArrayList;
@@ -43,16 +45,28 @@ public class SubcategoryAdapter extends RecyclerView.Adapter<SubcategoryAdapter.
     public void onBindViewHolder(@NonNull SubcategoryViewHolder holder, int position) {
         holder.courseName.setText(courseArrayList.get(position).getCourseName());
         holder.courseRating.setRating(courseArrayList.get(position).getCourseRating());
-        holder.coursePrice.setText("IDR " + courseArrayList.get(position).getCoursePrice());
+
+        if (courseArrayList.get(position).getCoursePrice()==0){
+            holder.coursePrice.setText(holder.itemView.getContext().getString(R.string.course_applied));
+        }else {
+            holder.coursePrice.setText(holder.itemView.getContext().getString(R.string.price, courseArrayList.get(position).getCoursePrice()));
+        }
 
         Glide.with(holder.itemView.getContext()).load(courseArrayList.get(position).getCourseImageURL()).into(holder.courseImage);
 
         holder.courseCard.setOnClickListener(v -> {
             if (v.getId() == R.id.courseCardView){
-                Intent intent = new Intent(holder.context, StudentCourseDetailActivity.class);
-                intent.putExtra("key", key);
-                intent.putExtra("courseName", holder.courseName.getText().toString());
-                holder.context.startActivity(intent);
+                if (holder.coursePrice.getText().toString().equals(holder.itemView.getContext().getString(R.string.course_applied))){
+                    Intent intent = new Intent(holder.context, MyCourseDetailActivity.class);
+                    intent.putExtra("courseName", holder.courseName.getText().toString());
+                    intent.putExtra("key", key);
+                    holder.context.startActivity(intent);
+                }else {
+                    Intent intent = new Intent(holder.context, StudentCourseDetailActivity.class);
+                    intent.putExtra("key", key);
+                    intent.putExtra("courseName", holder.courseName.getText().toString());
+                    holder.context.startActivity(intent);
+                }
             }
         });
     }

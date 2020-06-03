@@ -1,15 +1,16 @@
 package com.example.learnbit.launch.student.home;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +20,11 @@ import android.widget.Toast;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.home.adapter.CategoryAdapter;
-import com.example.learnbit.launch.student.home.adapter.CourseCardHolder;
+import com.example.learnbit.launch.student.home.adapter.CourseCardAdapter;
 import com.example.learnbit.launch.student.home.model.Category;
 import com.example.learnbit.launch.student.home.search.StudentSearchActivity;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,11 +38,15 @@ import java.util.ArrayList;
 public class StudentHomeFragment extends Fragment implements View.OnClickListener {
 
     private RecyclerView categoryRecyclerView, topRatedRecyclerView;
-    private Button searchButton;
     private ArrayList<Category> categoryArrayList;
-    private FirebaseRecyclerOptions<Course> firebaseRecyclerOptions;
-    private FirebaseRecyclerAdapter<Course, CourseCardHolder> firebaseRecyclerAdapter;
 
+    private ArrayList<Course> courseArrayList = new ArrayList<>();
+    private ArrayList<String> keyArrayList = new ArrayList<>();
+    private CourseCardAdapter courseCardAdapter;
+
+    private FirebaseDatabase firebaseDatabase;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -49,13 +54,16 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
 
         categoryRecyclerView = view.findViewById(R.id.categoryRecyclerView);
         topRatedRecyclerView = view.findViewById(R.id.topRatedRecyclerView);
-        searchButton = view.findViewById(R.id.student_SearchBar);
+        Button searchButton = view.findViewById(R.id.student_SearchBar);
 
         searchButton.setOnClickListener(this);
 
+        setupFirebase();
         retrieveData();
         setupRecyclerView();
         addData();
+
+        setStatusBarColor();
 
         return view;
     }
@@ -68,62 +76,63 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
         categoryRecyclerView.setAdapter(categoryAdapter);
         categoryRecyclerView.setHasFixedSize(true);
 
-        firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Course, CourseCardHolder>(firebaseRecyclerOptions) {
-            @Override
-            protected void onBindViewHolder(@NonNull CourseCardHolder holder, int position, @NonNull Course model) {
-                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Course");
-
-                databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot ds : dataSnapshot.getChildren()){
-                            holder.setCourse(ds.getKey());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Toast.makeText(getContext(), "Failed to load database", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @NonNull
-            @Override
-            public CourseCardHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-                View view = inflater.inflate(R.layout.item_course_card, parent, false);
-
-                return new CourseCardHolder(view);
-            }
-        };
-
+        courseCardAdapter = new CourseCardAdapter(courseArrayList, keyArrayList);
         RecyclerView.LayoutManager topRatedLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         topRatedRecyclerView.setLayoutManager(topRatedLayoutManager);
-        topRatedRecyclerView.setAdapter(firebaseRecyclerAdapter);
+        topRatedRecyclerView.setAdapter(courseCardAdapter);
+        topRatedRecyclerView.setHasFixedSize(true);
+    }
+
+    private void setupFirebase(){
+        firebaseDatabase = FirebaseDatabase.getInstance();
     }
 
     private void retrieveData(){
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        Query query = firebaseDatabase.getReference("Course");
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
 
-        firebaseRecyclerOptions = new FirebaseRecyclerOptions.Builder<Course>().setQuery(query, Course.class).build();
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String key = "";
+
+                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    key = ds.getKey();
+
+                    retrieveCourseData(key);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getContext(), "Failed to load database", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
+    private void retrieveCourseData(String key){
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(key);
+        Query query = databaseReference.orderByChild("courseRating").startAt(4).endAt(5).limitToLast(5);
 
-        firebaseRecyclerAdapter.startListening();
-    }
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds: dataSnapshot.getChildren()){
+                    Course course = ds.getValue(Course.class);
 
-    @Override
-    public void onStop() {
-        super.onStop();
+                    if (course!=null){
+                        keyArrayList.add(key);
+                        courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating()));
 
-        if (firebaseRecyclerAdapter!=null){
-            firebaseRecyclerAdapter.stopListening();
-        }
+                        courseCardAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getContext(), "Failed to fetch database data.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void addData(){
@@ -143,5 +152,13 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
             Intent intent = new Intent(getContext(), StudentSearchActivity.class);
             startActivity(intent);
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void setStatusBarColor(){
+        if (getActivity()==null) return;
+
+        getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.primaryColorDark));
+        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
     }
 }

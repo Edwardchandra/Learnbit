@@ -30,6 +30,7 @@ import com.example.learnbit.R;
 import com.example.learnbit.launch.extension.PaymentUtils;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.model.userdata.Notifications;
+import com.example.learnbit.launch.model.userdata.student.StudentCourse;
 import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.student.home.coursedetails.coursecheckout.adapter.TermsAdapter;
 import com.example.learnbit.launch.teacher.home.addcourse.fourthsection.model.Terms;
@@ -221,7 +222,8 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
             if (!termsCheckBox.isChecked()){
                 Toast.makeText(this, "Please read and agree with the terms and conditions before you checkout.", Toast.LENGTH_SHORT).show();
             }else{
-                requestPayment(v);
+//                requestPayment(v);
+                setData();
             }
         }
     }
@@ -235,6 +237,8 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String courseKey = "";
                 int studentCount = 0;
+                HashMap<String, String> courseSchedule = new HashMap<>();
+                String courseImageURL = "";
 
                 for (DataSnapshot ds: dataSnapshot.getChildren()){
                     courseKey = ds.getKey();
@@ -247,11 +251,19 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
                         }else{
                             studentCount = 0;
                         }
+
+                        courseSchedule = course.getCourseSchedule();
+                        courseImageURL = course.getCourseImageURL();
                     }
                 }
 
                 if (courseKey!=null){
-                    firebaseDatabase.getReference("Users").child(user.getUid()).child("student").child("courses").child("course " + (courseCounter + 1)).setValue(courseKey);
+                    firebaseDatabase.getReference("Users")
+                            .child(user.getUid())
+                            .child("student")
+                            .child("courses")
+                            .child(courseKey)
+                            .setValue(new StudentCourse(key, spinnerValue, courseSchedule, courseName, courseImageURL));
                     firebaseDatabase.getReference("Course").child(key).child(courseKey).child("courseStudent").child("student " + (studentCount + 1)).setValue(user.getUid());
                     firebaseDatabase.getReference("Course").child(key).child(courseKey).child("courseTime").child(spinnerValue).setValue(true);
 
