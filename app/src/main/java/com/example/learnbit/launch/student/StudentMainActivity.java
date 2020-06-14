@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.example.learnbit.R;
+import com.example.learnbit.launch.extension.BaseActivity;
+import com.example.learnbit.launch.extension.RemoveSinchService;
 import com.example.learnbit.launch.student.course.StudentCourseFragment;
 import com.example.learnbit.launch.student.home.StudentHomeFragment;
 import com.example.learnbit.launch.student.profile.StudentProfileFragment;
@@ -18,7 +20,7 @@ import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.teacher.home.TeacherHomeFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class StudentMainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+public class StudentMainActivity extends BaseActivity implements BottomNavigationView.OnNavigationItemSelectedListener, RemoveSinchService {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +46,7 @@ public class StudentMainActivity extends AppCompatActivity implements BottomNavi
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         Fragment fragment = null;
-        switch (menuItem.getItemId()){
+        switch (menuItem.getItemId()) {
             case R.id.student_home_menu:
                 fragment = new StudentHomeFragment();
                 break;
@@ -63,5 +65,21 @@ public class StudentMainActivity extends AppCompatActivity implements BottomNavi
         super.onBackPressed();
 
         moveTaskToBack(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (getSinchServiceInterface() != null){
+            getSinchServiceInterface().stopClient();
+        }
+    }
+
+    @Override
+    public void removeSinchService() {
+        if (getSinchServiceInterface()!=null){
+            getSinchServiceInterface().stopClient();
+        }
     }
 }

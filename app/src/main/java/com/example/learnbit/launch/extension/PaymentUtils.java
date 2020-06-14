@@ -19,13 +19,18 @@ import androidx.annotation.RequiresApi;
 
 public class PaymentUtils {
 
+    //initiate variable
     public static final List<String> SHIPPING_SUPPORTED_COUNTRIES = Arrays.asList("ID", "SG");
 
+    //get api version
     private static JSONObject getBaseRequest() throws JSONException {
         return new JSONObject().put("apiVersion", 2).put("apiVersionMinor", 0);
     }
 
-
+    //get gateway token
+    //LEARNBIT DEMO APPLICATION
+    //use demo gateway and merchant id
+    //gateway and merchant id can be changed by third party token in production phase
     private static JSONObject getGatewayTokenizationSpecification() throws JSONException {
         return new JSONObject() {{
             put("type", "PAYMENT_GATEWAY");
@@ -38,6 +43,7 @@ public class PaymentUtils {
         }};
     }
 
+    //retrieve allowed card network
     private static JSONArray getAllowedCardNetworks() {
         return new JSONArray()
                 .put("AMEX")
@@ -48,13 +54,14 @@ public class PaymentUtils {
                 .put("VISA");
     }
 
+    //retrieve allowed verification method
     private static JSONArray getAllowedCardAuthMethods() {
         return new JSONArray()
                 .put("PAN_ONLY")
                 .put("CRYPTOGRAM_3DS");
     }
 
-
+    //put billing address, allowed verification method, and card networks to card parameters
     private static JSONObject getBaseCardPaymentMethod() throws JSONException {
         JSONObject cardPaymentMethod = new JSONObject();
         cardPaymentMethod.put("type", "CARD");
@@ -75,7 +82,7 @@ public class PaymentUtils {
         return cardPaymentMethod;
     }
 
-
+    //get card payment method
     private static JSONObject getCardPaymentMethod() throws JSONException {
         JSONObject cardPaymentMethod = getBaseCardPaymentMethod();
         cardPaymentMethod.put("tokenizationSpecification", getGatewayTokenizationSpecification());
@@ -83,14 +90,16 @@ public class PaymentUtils {
         return cardPaymentMethod;
     }
 
-
+    //create payment client
+    //environment is set to environment test
     public static PaymentsClient createPaymentsClient(Activity activity) {
         Wallet.WalletOptions walletOptions =
                 new Wallet.WalletOptions.Builder().setEnvironment(WalletConstants.ENVIRONMENT_TEST).build();
         return Wallet.getPaymentsClient(activity, walletOptions);
     }
 
-
+    //require android version from Nougat
+    //if user is ready to pay, configure allowed payment method
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static Optional<JSONObject> getIsReadyToPayRequest() {
         try {
@@ -105,6 +114,7 @@ public class PaymentUtils {
         }
     }
 
+    //get transaction information if payment is success
     private static JSONObject getTransactionInfo(String price) throws JSONException {
         JSONObject transactionInfo = new JSONObject();
         transactionInfo.put("totalPrice", price);
@@ -116,15 +126,14 @@ public class PaymentUtils {
         return transactionInfo;
     }
 
-
+    //get merchant information
     private static JSONObject getMerchantInfo() throws JSONException {
         return new JSONObject().put("merchantName", "Example Merchant");
     }
 
-
+    //get payment data
     @RequiresApi(api = Build.VERSION_CODES.N)
     public static Optional<JSONObject> getPaymentDataRequest(long price) {
-
         final String priceValue = String.valueOf(price);
 
         try {
@@ -134,8 +143,8 @@ public class PaymentUtils {
             paymentDataRequest.put("transactionInfo", getTransactionInfo(priceValue));
             paymentDataRequest.put("merchantInfo", getMerchantInfo());
 
-      /* An optional shipping address requirement is a top-level property of the PaymentDataRequest
-      JSON object. */
+            /* An optional shipping address requirement is a top-level property of the PaymentDataRequest
+            JSON object. */
             paymentDataRequest.put("shippingAddressRequired", true);
 
             JSONObject shippingAddressParameters = new JSONObject();

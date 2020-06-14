@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
+import com.example.learnbit.launch.extension.RemoveSinchService;
+import com.example.learnbit.launch.extension.SinchService;
 import com.example.learnbit.launch.launch.MainActivity;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
 import com.example.learnbit.launch.model.userdata.User;
@@ -48,6 +50,8 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
     private FirebaseStorage firebaseStorage;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
+
+    private RemoveSinchService removeSinchService;
 
     private User users = new User();
 
@@ -167,6 +171,7 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
                 startActivity(changePasswordIntent);
                 break;
             case R.id.teacherProfile_SignOutButton:
+//                removeSinchService.removeSinchService();
                 firebaseAuth.signOut();
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 startActivity(intent);

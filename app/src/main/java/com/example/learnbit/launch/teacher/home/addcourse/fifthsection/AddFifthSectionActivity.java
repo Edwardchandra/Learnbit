@@ -267,11 +267,10 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
 
     private void getCurrentDateTime(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("d MMM yyyy HH:mm", Locale.ENGLISH);
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("WIB"));
 
         dateTime = simpleDateFormat.format(new java.util.Date());
 
-        Long timestampLong = System.currentTimeMillis()/1000;
+        long timestampLong = System.currentTimeMillis()/1000;
         timestamp = Long.toString(timestampLong);
     }
 }

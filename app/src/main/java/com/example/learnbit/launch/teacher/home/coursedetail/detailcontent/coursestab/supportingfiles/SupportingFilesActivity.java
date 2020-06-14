@@ -103,7 +103,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
 
         user = firebaseAuth.getCurrentUser();
         databaseReference = firebaseDatabase.getReference("Course");
-        storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child(courseWeek).child("topics").child(courseSectionPart).child(courseSectionTopic);;
+        storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child(courseWeek).child("topics").child(courseSectionPart).child(courseSectionTopic);
     }
 
     private void setupFilesRecyclerView(){
@@ -114,7 +114,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
     }
 
     private void setupMaterialRecyclerView(){
-        materialAdapter = new MaterialAdapter(materialArrayList);
+        materialAdapter = new MaterialAdapter(materialArrayList, courseWeek, courseName, courseSectionPart, courseSectionTopic);
         RecyclerView.LayoutManager materialLayoutManager = new LinearLayoutManager(getApplicationContext());
         materialRecyclerView.setLayoutManager(materialLayoutManager);
         materialRecyclerView.setAdapter(materialAdapter);

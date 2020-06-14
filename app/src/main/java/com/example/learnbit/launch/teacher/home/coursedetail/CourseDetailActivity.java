@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,8 +21,13 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
+import com.example.learnbit.launch.extension.BaseActivity;
+import com.example.learnbit.launch.extension.SinchService;
 import com.example.learnbit.launch.model.coursedata.Course;
+import com.example.learnbit.launch.model.userdata.teacher.Teacher;
+import com.example.learnbit.launch.reusableactivity.CallScreenActivity;
 import com.example.learnbit.launch.teacher.home.coursedetail.adapter.CourseDetailViewPagerAdapter;
+import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.studenttab.adapter.CourseStudentAdapter;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,8 +37,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.calling.Call;
 
-public class CourseDetailActivity extends AppCompatActivity {
+public class CourseDetailActivity extends BaseActivity {
 
     private Toolbar courseDetailToolbar;
     private ViewPager courseDetailViewPager;
@@ -40,8 +48,7 @@ public class CourseDetailActivity extends AppCompatActivity {
     private TextView courseNameET, courseCategoryET;
     private LinearLayout linearLayout;
 
-    private static final String detailPreference = "DETAIL_PREFERENCE";
-    private String courseName;
+    private String courseKey;
 
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
@@ -64,7 +71,6 @@ public class CourseDetailActivity extends AppCompatActivity {
 
         setupToolbar();
         setupViewPager();
-        savePreferenceData();
         setupFirebase();
         retrieveData();
     }
@@ -77,28 +83,28 @@ public class CourseDetailActivity extends AppCompatActivity {
     }
 
     private void retrieveData(){
+        courseKey = getIntent().getStringExtra("key");
+
         DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
-        query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
+        query = databaseReference.child(user.getUid()).child(courseKey);
 
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds: dataSnapshot.getChildren()){
-                    course = ds.getValue(Course.class);
+                course = dataSnapshot.getValue(Course.class);
 
-                    if (course != null){
-                        String courseImageURL = course.getCourseImageURL();
-                        Log.d("courseImageURL", courseImageURL + " ");
-                        Glide.with(getApplicationContext()).load(courseImageURL).into(courseDetailImageView);
+                if (course != null){
+                    String courseImageURL = course.getCourseImageURL();
+                    Log.d("courseImageURL", courseImageURL + " ");
+                    Glide.with(getApplicationContext()).load(courseImageURL).into(courseDetailImageView);
 
-                        if (course.getCourseAcceptance().equals("pending")){
-                            linearLayout.setVisibility(View.VISIBLE);
-                        }else{
-                            linearLayout.setVisibility(View.INVISIBLE);
-                        }
-                        courseNameET.setText(course.getCourseName());
-                        courseCategoryET.setText(getString(R.string.divider, course.getCourseCategory(), course.getCourseSubcategory()));
+                    if (course.getCourseAcceptance().equals("pending")){
+                        linearLayout.setVisibility(View.VISIBLE);
+                    }else{
+                        linearLayout.setVisibility(View.INVISIBLE);
                     }
+                    courseNameET.setText(course.getCourseName());
+                    courseCategoryET.setText(getString(R.string.divider, course.getCourseCategory(), course.getCourseSubcategory()));
                 }
             }
 
@@ -119,17 +125,6 @@ public class CourseDetailActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
-    }
-
-    private void savePreferenceData(){
-        if (getIntent()!=null){
-            SharedPreferences preferences = getSharedPreferences(detailPreference, MODE_PRIVATE);
-            courseName = getIntent().getStringExtra("courseName");
-
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("courseName", courseName);
-            editor.apply();
-        }
     }
 
     private void setupToolbar(){
@@ -168,4 +163,8 @@ public class CourseDetailActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+    }
 }

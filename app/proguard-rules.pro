@@ -19,3 +19,23 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+-dontwarn org.apache.http.annotation.**
+
+-keep class com.sinch.** { *; }
+-keep interface com.sinch.** { *; }
+-keep class org.webrtc.** { *; }
+
+-keep class com.google.android.gms.**
+{ *; }
+
+-dontwarn com.sinch.**
+-dontwarn com.google.android.gms.**
+-dontwarn android.media.**
+-dontwarn com.sinch.android.rtc.internal.client.fcm.**
+

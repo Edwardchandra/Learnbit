@@ -11,12 +11,13 @@ import androidx.core.app.NotificationManagerCompat;
 
 public class ReminderBroadcast extends BroadcastReceiver {
 
+    //broadcast notification to device
     @Override
     public void onReceive(Context context, Intent intent) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "reminder01")
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "REMINDER_1")
                 .setSmallIcon(R.drawable.background_gradient)
                 .setContentTitle("Class Reminder")
-                .setContentText("Your class is going to start in 5 minutes")
+                .setContentText("Your class is going to start soon")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);

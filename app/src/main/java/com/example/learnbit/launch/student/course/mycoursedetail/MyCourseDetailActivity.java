@@ -2,11 +2,15 @@ package com.example.learnbit.launch.student.course.mycoursedetail;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,10 +22,12 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
+import com.example.learnbit.launch.extension.BaseActivity;
+import com.example.learnbit.launch.extension.SinchService;
 import com.example.learnbit.launch.model.coursedata.Course;
-import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.BenefitAdapter;
-import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.RequirementAdapter;
-import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.SectionAdapter;
+import com.example.learnbit.launch.reusableactivity.CallScreenActivity;
+import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.StudentSectionAdapter;
+import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.adapter.SectionAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,6 +39,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.sinch.android.rtc.calling.Call;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -41,17 +48,25 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 
-public class MyCourseDetailActivity extends AppCompatActivity implements View.OnClickListener {
+public class MyCourseDetailActivity extends BaseActivity implements View.OnClickListener {
 
     private RecyclerView sectionRecyclerView;
     private TextView myCourseName, myCourseCategory, myCourseStartTime, teacherName, teacherRatings, teacherCourseCount;
     private ImageView teacherImageView, myCourseImageView;
     private Toolbar myCourseToolbar;
+    private Button callButton;
 
     private String courseName, key;
 
     private FirebaseDatabase firebaseDatabase;
     private FirebaseUser user;
+
+    String[] permissions = {
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.CAMERA
+    };
+
+    private static final int PERMISSIONS_CODE = 1;
 
     private ArrayList<Section> sectionArrayList = new ArrayList<>();
 
@@ -68,10 +83,11 @@ public class MyCourseDetailActivity extends AppCompatActivity implements View.On
         teacherImageView = findViewById(R.id.teacherImageView);
         myCourseImageView = findViewById(R.id.myCourseDetail_ImageView);
         teacherCourseCount = findViewById(R.id.teacherCourseCount);
-        Button callButton = findViewById(R.id.callButton);
+        callButton = findViewById(R.id.callButton);
         sectionRecyclerView = findViewById(R.id.curriculumRecyclerView);
         myCourseToolbar = findViewById(R.id.myCourseDetail_Toolbar);
 
+        callButton.setEnabled(false);
         callButton.setOnClickListener(this);
 
         teacherImageView.setClipToOutline(true);
@@ -80,6 +96,8 @@ public class MyCourseDetailActivity extends AppCompatActivity implements View.On
         retrieveIntentData();
         setupFirebase();
         retrieveData();
+
+        checkServiceEnabled();
     }
 
     private void setupFirebase(){
@@ -234,8 +252,68 @@ public class MyCourseDetailActivity extends AppCompatActivity implements View.On
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.callButton){
-            //do something here
-            Log.d("call Button", "call action");
+            if (!checkPermission(getApplicationContext(), permissions)){
+                ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_CODE);
+            }else{
+                Toast.makeText(this, "permission granted", Toast.LENGTH_SHORT).show();
+                callAction();
+            }
+        }
+    }
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+
+        callButton.setEnabled(true);
+        checkServiceEnabled();
+    }
+
+    private void checkServiceEnabled(){
+        if (!callButton.isEnabled()){
+            callButton.setClickable(false);
+            callButton.setBackground(getResources().getDrawable(R.drawable.call_button_disabled));
+        }else{
+            callButton.setClickable(true);
+            callButton.setBackground(getResources().getDrawable(R.drawable.call_button));
+        }
+    }
+
+    private void callAction(){
+        if (key!=null){
+            Log.d("callid", key);
+
+            Call call = getSinchServiceInterface().callUserVideo(key);
+
+            String callID = call.getCallId();
+
+            Intent callScreen = new Intent(this, CallScreenActivity.class);
+            callScreen.putExtra(SinchService.CALL_ID, callID);
+            startActivity(callScreen);
+        }
+    }
+
+    public static boolean checkPermission(Context context, String[] permissions){
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_CODE){
+            if (grantResults.length > 0){
+                callAction();
+            }else{
+                Toast.makeText(this, "please agree with the permissions", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

@@ -5,9 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -15,129 +12,122 @@ import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
-import com.example.learnbit.launch.model.userdata.User;
-import com.example.learnbit.launch.onboard.student.StudentOnboardActivity;
+import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-
-import java.io.ByteArrayOutputStream;
+import com.google.firebase.database.ValueEventListener;
 
 public class RoleActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private LinearLayout studentButton, teacherButton;
-
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser user;
-
-    private FirebaseDatabase firebaseDatabase;
+    //Initiate firebase variable
+    //Database Reference is used to get the path to the item from the Firebase Database
     private DatabaseReference databaseReference;
-    private FirebaseStorage firebaseStorage;
-    private StorageReference storageReference;
 
-    private String name, email;
-    private double rating = 5.0;
-    private long balance = 200000;
-
+    //Preference key used to retrieve preference data(if there's any)
     private static final String detailPreference = "LOGIN_PREFERENCE";
+    private static final String preferenceKey = "role";
 
+    //onCreate method is executed when the activity is created
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_role);
 
-        studentButton = findViewById(R.id.role_StudentButton);
-        teacherButton = findViewById(R.id.role_TeacherButton);
+        //initiate elements in layout file
+        LinearLayout studentButton = findViewById(R.id.role_StudentButton);
+        LinearLayout teacherButton = findViewById(R.id.role_TeacherButton);
 
+        //set element action when it is clicked
         studentButton.setOnClickListener(this);
         teacherButton.setOnClickListener(this);
 
-        getIntentData();
-        setupFirebaseAuth();
+        setupFirebase();
     }
 
-    private void setupFirebaseAuth(){
-        firebaseAuth = FirebaseAuth.getInstance();
-        user = firebaseAuth.getCurrentUser();
-    }
+    //setting up Firebase Authentication, Firebase Database, and Firebase Storage
+    //user - get the current signed in user from Firebase Authentication
+    //database reference - assign a specific path where data is getting stored/is going to be stored
+    private void setupFirebase(){
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = firebaseAuth.getCurrentUser();
 
-    private void setupFirebaseDatabase(){
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = firebaseDatabase.getReference("Users");
-
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
-            String deviceToken = instanceIdResult.getToken();
-
-            databaseReference.child(user.getUid()).setValue(new User(name, email, deviceToken));
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Failed to save value.", Toast.LENGTH_SHORT).show();
-        });
-    }
-
-    private void setupFirebaseStorage(){
-        firebaseStorage = FirebaseStorage.getInstance();
-        storageReference = firebaseStorage.getReference().child("Users").child(user.getUid()).child("profileimage");
-    }
-
-    private void uploadProfileImage(){
-        Drawable drawable = getResources().getDrawable(R.drawable.teacher_role);
-
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] data = baos.toByteArray();
-
-        UploadTask uploadTask = storageReference.putBytes(data);
-        uploadTask.addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Failed to upload profile image", Toast.LENGTH_SHORT).show())
-                .addOnSuccessListener(taskSnapshot -> Toast.makeText(getApplicationContext(), "Successfully upload profile image", Toast.LENGTH_SHORT).show());
-    }
-
-    private void getIntentData(){
-        name = getIntent().getStringExtra("profilename");
-        email = getIntent().getStringExtra("profileemail");
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        if (user!=null){
+            databaseReference = firebaseDatabase.getReference("Users").child(user.getUid()).child("teacher");
+        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.role_StudentButton:
-                setupFirebaseDatabase();
-                setupFirebaseStorage();
-                uploadProfileImage();
-                savePreferenceData("student");
-                Intent studentIntent = new Intent(getApplicationContext(), StudentOnboardActivity.class);
-                startActivity(studentIntent);
+                studentRoleAction();
                 break;
             case R.id.role_TeacherButton:
-                setupFirebaseDatabase();
-                setupFirebaseStorage();
-                uploadProfileImage();
-                savePreferenceData("teacher");
-                databaseReference.child(user.getUid()).child("teacher").setValue(new Teacher(balance, "", rating));
-                Intent teacherIntent = new Intent(getApplicationContext(), TeacherMainActivity.class);
-                startActivity(teacherIntent);
+                teacherRoleAction();
                 break;
-            default:
-                Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
+    //save chosen role data to shared preference
+    //role is used to choose which home will be shown(student/teacher)
     private void savePreferenceData(String role){
         if (getIntent()!=null){
             SharedPreferences preferences = getSharedPreferences(detailPreference, MODE_PRIVATE);
 
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("role", role);
+            editor.putString(preferenceKey, role);
             editor.apply();
         }
+    }
+
+    //action taken when choose student role
+    private void studentRoleAction(){
+        savePreferenceData("student");
+        Intent intent = new Intent(this, StudentMainActivity.class);
+        startActivity(intent);
+    }
+
+    //action taken when choose teacher role
+    private void teacherRoleAction(){
+        savePreferenceData("teacher");
+        retrieveData();
+
+        Intent intent = new Intent(this, TeacherMainActivity.class);
+        startActivity(intent);
+    }
+
+    //retrieve data to check if user already signed in before
+    private void retrieveData(){
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Teacher teacher = dataSnapshot.getValue(Teacher.class);
+
+                if (teacher==null){
+                    saveData();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                toast(getString(R.string.retrieve_failed));
+            }
+        });
+    }
+
+    //save data with value
+    private void saveData(){
+        databaseReference.setValue(new Teacher(0, "", 0.0));
+    }
+
+    //method to show toast
+    private void toast(String string){
+        Toast.makeText(this, string, Toast.LENGTH_SHORT).show();
     }
 }

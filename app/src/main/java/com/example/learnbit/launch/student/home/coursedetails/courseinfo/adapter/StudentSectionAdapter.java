@@ -2,7 +2,6 @@ package com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapte
 
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +20,11 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionViewHolder> {
+public class StudentSectionAdapter extends RecyclerView.Adapter<StudentSectionAdapter.SectionViewHolder> {
 
     private ArrayList<Section> sectionArrayList;
 
-    public SectionAdapter(ArrayList<Section> sectionArrayList) {
+    public StudentSectionAdapter(ArrayList<Section> sectionArrayList) {
         this.sectionArrayList = sectionArrayList;
     }
 
@@ -51,7 +50,7 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
             holder.contentArrayList.sort(Comparator.comparing(Content::getSectionPart));
         }
 
-        ContentAdapter contentAdapter = new ContentAdapter(holder.contentArrayList, holder.context);
+        StudentContentAdapter contentAdapter = new StudentContentAdapter(holder.contentArrayList, holder.context);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(holder.context);
         holder.contentRV.setLayoutManager(layoutManager);
         holder.contentRV.setAdapter(contentAdapter);

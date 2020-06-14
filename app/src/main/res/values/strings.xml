@@ -118,6 +118,37 @@
 
     <string name="course_applied">Course Applied</string>
 
+    <string name="default_onclick">Nothing Happened</string>
+
+    <string name="name_field_error">Name must not be empty</string>
+    <string name="name_field_error_character">Name must be more than 3 characters</string>
+    <string name="email_field_error">Email must not be empty</string>
+    <string name="email_field_error_format">Email must be in valid format</string>
+    <string name="password_field_error">Password must not be empty</string>
+    <string name="password_field_error_character">Password must be more than 6 characters</string>
+
+    <string name="failed_registration">Registration failed. Account has already exist.</string>
+    <string name="failed_registration_cancelled">Registration failed. Please check your network connection.</string>
+
+    <string name="failed_signin">Sign In Failed. Please check your network connection.</string>
+
+    <string name="profile_name_key">profilename</string>
+    <string name="profile_email_key">profileemail</string>
+
+    <string name="permission_granted">Permission has been granted</string>
+    <string name="permission_declined">Permission has been declined</string>
+
+    <string name="awaiting_admin_confirmation">Awaiting admin confirmation</string>
+    <string name="course_start_time">Course starts at %1$s</string>
+    <string name="no_course">There are no course ahead</string>
+
+    <string name="course_student_count">%1$d student(s)</string>
+    <string name="no_course_student">Your course has no student yet</string>
+
+    <string name="retrieve_failed">Failed to retrieve stored data.</string>
+    <string name="save_failed">Failed to save data.</string>
+    <string name="upload_failed">Failed to upload profile picture.</string>
+
     <string-array name="bank_array">
         <item>Bank BCA</item>
         <item>Bank BNI</item>
@@ -151,7 +182,6 @@
         <item>Dana</item>
         <item>LinkAja</item>
     </string-array>
-
     <string-array name="category_array">
         <item>Language and Literature</item>
         <item>Personal Development</item>
@@ -162,26 +192,22 @@
         <item>Art and Culture</item>
         <item>Civic Education</item>
     </string-array>
-
     <string-array name="language_array">
         <item>Indonesia</item>
         <item>English</item>
         <item>Mandarin</item>
     </string-array>
-
     <string-array name="personal_development_array">
         <item>Physical Education</item>
         <item>Religion</item>
         <item>Self Esteem</item>
     </string-array>
-
     <string-array name="computer_array">
         <item>IT and Software</item>
         <item>Graphic Design</item>
         <item>Office</item>
         <item>Photo and Video Editing</item>
     </string-array>
-
 
     <!--    WIDE USAGE-->
     <string-array name="mathematics_array">

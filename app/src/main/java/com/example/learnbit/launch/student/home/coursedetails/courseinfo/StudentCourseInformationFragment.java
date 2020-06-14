@@ -25,7 +25,7 @@ import com.example.learnbit.launch.model.userdata.User;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
 import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.BenefitAdapter;
 import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.RequirementAdapter;
-import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.SectionAdapter;
+import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.StudentSectionAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -273,7 +273,7 @@ public class StudentCourseInformationFragment extends Fragment {
     private void setupRecyclerView(){
         BenefitAdapter benefitAdapter = new BenefitAdapter(benefitArrayList);
         RequirementAdapter requirementAdapter = new RequirementAdapter(requirementArrayList);
-        SectionAdapter sectionAdapter = new SectionAdapter(sectionArrayList);
+        StudentSectionAdapter sectionAdapter = new StudentSectionAdapter(sectionArrayList);
 
         RecyclerView.LayoutManager benefitLayoutManager = new LinearLayoutManager(getContext());
         RecyclerView.LayoutManager requirementLayoutManager = new LinearLayoutManager(getContext());

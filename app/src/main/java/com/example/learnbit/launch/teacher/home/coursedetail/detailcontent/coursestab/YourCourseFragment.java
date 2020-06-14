@@ -47,7 +47,7 @@ public class YourCourseFragment extends Fragment {
     private TextView courseSummary;
 
     private static final String detailPreference = "DETAIL_PREFERENCE";
-    private String courseName;
+    private String courseKey;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
@@ -84,7 +84,9 @@ public class YourCourseFragment extends Fragment {
     private void getPreferenceData(){
         if (getActivity()!=null){
             SharedPreferences preferences = getActivity().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
-            courseName = preferences.getString("courseName", "");
+            courseKey = preferences.getString("courseKey", "");
+
+            Log.d("coursekey0", courseKey + " ");
         }
     }
 
@@ -99,30 +101,32 @@ public class YourCourseFragment extends Fragment {
         getPreferenceData();
 
         databaseReference = firebaseDatabase.getReference("Course");
-        Query query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
+        Query query = databaseReference.child(user.getUid()).child(courseKey);
+
+        Log.d("coursekey0", courseKey);
+
+        sectionArrayList.clear();
 
         query.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    Course course = ds.getValue(Course.class);
+                Course course = dataSnapshot.getValue(Course.class);
 
-                    if (course!=null){
-                        Log.d("course", course.getCourseCurriculum() + " ");
+                if (course!=null){
+                    Log.d("course", course.getCourseCurriculum() + " ");
 
-                        for (HashMap.Entry<String, Section> entry : course.getCourseCurriculum().entrySet()) {
-                            String key = entry.getKey();
-                            Section value = entry.getValue();
+                    for (HashMap.Entry<String, Section> entry : course.getCourseCurriculum().entrySet()) {
+                        String key = entry.getKey();
+                        Section value = entry.getValue();
 
-                            sectionArrayList.add(new Section(key, value.getName(), value.getTopics()));
-                            sectionArrayList.sort(Comparator.comparing(Section::getWeek));
+                        sectionArrayList.add(new Section(key, value.getName(), value.getTopics()));
+                        sectionArrayList.sort(Comparator.comparing(Section::getWeek));
 
-                            Log.d("section", sectionArrayList + " ");
-                        }
-
-                        setupRecyclerView();
+                        Log.d("section", sectionArrayList + " ");
                     }
+
+                    setupRecyclerView();
                 }
             }
 

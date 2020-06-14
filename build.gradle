@@ -20,14 +20,14 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            url "https://github.com/QuickBlox/quickblox-android-sdk-releases/raw/master/"
+
+        flatDir {
+            dirs 'libs'
         }
     }
 }
 
 def qbSdkVersion = '3.9.2'
-
 
 task clean(type: Delete) {
     delete rootProject.buildDir

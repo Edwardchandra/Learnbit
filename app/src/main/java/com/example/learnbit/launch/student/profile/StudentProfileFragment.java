@@ -21,7 +21,9 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
+import com.example.learnbit.launch.extension.RemoveSinchService;
 import com.example.learnbit.launch.model.userdata.User;
+import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.student.profile.accountsettings.StudentEditProfileActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.reusableactivity.ChangePasswordActivity;
@@ -53,6 +55,8 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
     private ValueEventListener userEventListener;
 
     private static final String detailPreference = "LOGIN_PREFERENCE";
+
+    private RemoveSinchService removeSinchService;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -149,6 +153,7 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
                 startActivity(switchIntent);
                 break;
             case R.id.studentProfile_SignOutButton:
+                removeSinchService.removeSinchService();
                 firebaseAuth.signOut();
                 break;
             default:
@@ -190,4 +195,5 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
         getActivity().getWindow().setStatusBarColor(Color.WHITE);
         getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
     }
+
 }

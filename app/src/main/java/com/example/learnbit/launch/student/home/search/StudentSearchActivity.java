@@ -35,17 +35,22 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 public class StudentSearchActivity extends AppCompatActivity {
+
+    //initiate element variables
     private Toolbar searchToolbar;
     private RecyclerView searchRecyclerView;
 
+    //initiate firebase database variable
     private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference databaseReference;
 
+    //initiate variables
     private ArrayList<Course> courseArrayList = new ArrayList<>();
     private ArrayList<String> keyArrayList = new ArrayList<>();
 
+    //initiate adapter class variable
     private StudentSearchAdapter studentSearchAdapter;
 
+    //execute when activity created
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,9 +62,10 @@ public class StudentSearchActivity extends AppCompatActivity {
         setupToolbar();
         setupFirebase();
         setupRecyclerView();
-        retrieveData();
+        retrieveKey();
     }
 
+    //setting up custom toolbar
     private void setupToolbar() {
         setSupportActionBar(searchToolbar);
 
@@ -70,6 +76,7 @@ public class StudentSearchActivity extends AppCompatActivity {
         }
     }
 
+    //setting up recyclerview to display retrieved firebae database data
     private void setupRecyclerView() {
         studentSearchAdapter = new StudentSearchAdapter(courseArrayList, keyArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -77,13 +84,15 @@ public class StudentSearchActivity extends AppCompatActivity {
         searchRecyclerView.setAdapter(studentSearchAdapter);
     }
 
+    //setting up firebase instance
     private void setupFirebase() {
         firebaseDatabase = FirebaseDatabase.getInstance();
-
-        databaseReference = firebaseDatabase.getReference("Course");
     }
 
-    private void retrieveData(){
+    //retrieve course key from firebase database
+    private void retrieveKey(){
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
+
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

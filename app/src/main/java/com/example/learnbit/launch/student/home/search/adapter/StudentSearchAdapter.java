@@ -5,12 +5,9 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,10 +53,12 @@ public class StudentSearchAdapter extends RecyclerView.Adapter<StudentSearchAdap
             for (HashMap.Entry<String, String> entry : courseStudent.entrySet()){
                 String value = entry.getValue();
 
-                if (value.equals(user.getUid())){
-                    holder.studentSearchCoursePrice.setText(holder.context.getString(R.string.course_applied));
-                }else{
-                    holder.studentSearchCoursePrice.setText(holder.context.getString(R.string.price, courseArrayList.get(position).getCoursePrice()));
+                if (user!=null){
+                    if (value.equals(user.getUid())){
+                        holder.studentSearchCoursePrice.setText(holder.context.getString(R.string.course_applied));
+                    }else{
+                        holder.studentSearchCoursePrice.setText(holder.context.getString(R.string.price, courseArrayList.get(position).getCoursePrice()));
+                    }
                 }
             }
         }else{

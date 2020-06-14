@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class ContentAdapter  extends RecyclerView.Adapter<ContentAdapter.ContentViewHolder> {
+public class StudentContentAdapter extends RecyclerView.Adapter<StudentContentAdapter.ContentViewHolder> {
 
     private ArrayList<Content> contentArrayList;
     private Context context;
 
-    ContentAdapter(ArrayList<Content> contentArrayList, Context context) {
+    StudentContentAdapter(ArrayList<Content> contentArrayList, Context context) {
         this.contentArrayList = contentArrayList;
         this.context = context;
     }
