@@ -58,8 +58,8 @@ public class TeacherSearchActivity extends AppCompatActivity {
 
         setupToolbar();
         setupFirebase();
-        retrieveData();
         setupRecyclerView();
+        retrieveData();
     }
 
     //setting up custom toolbar
@@ -91,6 +91,7 @@ public class TeacherSearchActivity extends AppCompatActivity {
     private void retrieveData(){
         courseArrayList.clear();
         keyArrayList.clear();
+        teacherSearchAdapter.notifyDataSetChanged();
 
         DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid());
         ValueEventListener courseEventListener = new ValueEventListener() {
@@ -102,7 +103,7 @@ public class TeacherSearchActivity extends AppCompatActivity {
 
                     if (course!=null && courseKey!=null){
                         keyArrayList.add(courseKey);
-                        courseArrayList.add(new Course(course.getCourseName(), course.getCourseAcceptance(), course.getCourseImageURL(), course.getCourseTime(), course.getCourseStudent()));
+                        courseArrayList.add(new Course(course.getCourseName(), course.getCourseAcceptance(), course.getCourseImageURL(), course.getCourseTime(), course.getCourseStudent(), course.getCourseDate()));
                     }
                 }
 

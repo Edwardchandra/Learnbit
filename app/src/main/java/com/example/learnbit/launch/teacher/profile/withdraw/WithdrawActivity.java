@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,11 +20,8 @@ import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
-import com.example.learnbit.launch.teacher.home.addcourse.fifthsection.model.Date;
 import com.example.learnbit.launch.teacher.profile.withdraw.history.WithdrawHistoryActivity;
 import com.example.learnbit.launch.teacher.profile.withdraw.model.Withdraw;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,7 +33,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -45,21 +40,13 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
 
     private Spinner bankSpinner;
     private EditText accountNumberET, accountNameET, passwordET, amountET;
-    private Button sendButton;
     private TextView withdrawBalance;
 
-    private String spinnerValue;
-
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
-
-    private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
-
-    private FirebaseDatabase firebaseDatabase1;
     private DatabaseReference databaseReference1;
 
-    private String key;
+    private String spinnerValue;
     private String dateTime;
     private String timestamp;
 
@@ -68,13 +55,13 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_withdraw);
 
-        bankSpinner = (Spinner) findViewById(R.id.withdraw_BankSpinner);
-        accountNumberET = (EditText) findViewById(R.id.withdraw_AccountNumberET);
-        accountNameET = (EditText) findViewById(R.id.withdraw_HolderName);
-        passwordET = (EditText) findViewById(R.id.withdraw_PasswordET);
-        amountET = (EditText) findViewById(R.id.withdraw_AmountET);
-        withdrawBalance = (TextView) findViewById(R.id.withdraw_Balance);
-        sendButton = (Button) findViewById(R.id.withdraw_SendButton);
+        bankSpinner = findViewById(R.id.withdraw_BankSpinner);
+        accountNumberET = findViewById(R.id.withdraw_AccountNumberET);
+        accountNameET = findViewById(R.id.withdraw_HolderName);
+        passwordET = findViewById(R.id.withdraw_PasswordET);
+        amountET = findViewById(R.id.withdraw_AmountET);
+        withdrawBalance = findViewById(R.id.withdraw_Balance);
+        Button sendButton = findViewById(R.id.withdraw_SendButton);
         sendButton.setOnClickListener(this);
 
         setupSpinner();
@@ -101,14 +88,16 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
 
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        key = firebaseDatabase.getReference("Withdraw").push().getKey();
-        databaseReference = firebaseDatabase.getReference("Withdraw").child(key);
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        String key = firebaseDatabase.getReference("Withdraw").push().getKey();
+        if (key!=null){
+            databaseReference = firebaseDatabase.getReference("Withdraw").child(key);
+        }
 
-        firebaseDatabase1 = FirebaseDatabase.getInstance();
+        FirebaseDatabase firebaseDatabase1 = FirebaseDatabase.getInstance();
         databaseReference1 = firebaseDatabase1.getReference("Users").child(user.getUid()).child("teacher").child("balance");
     }
 
@@ -117,11 +106,10 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
             final String email = user.getEmail();
             final String password = passwordET.getText().toString();
 
-            AuthCredential authCredential = EmailAuthProvider.getCredential(email, password);
+            if (email!=null){
+                AuthCredential authCredential = EmailAuthProvider.getCredential(email, password);
 
-            user.reauthenticate(authCredential).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
+                user.reauthenticate(authCredential).addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
                         int accountNumber = 0;
                         int amount = 0;
@@ -129,22 +117,22 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
                         try {
                             accountNumber = Integer.parseInt(accountNumberET.getText().toString());
                         }catch (NumberFormatException e){
-                            Log.d("exception", "not a number");
+                            e.printStackTrace();
                         }
 
                         try {
                             amount = Integer.parseInt(amountET.getText().toString());
                         }catch (NumberFormatException e){
-                            Log.d("exception", "not a number");
+                            e.printStackTrace();
                         }
-                        
+
                         databaseReference.setValue(new Withdraw(spinnerValue, accountNumber, accountNameET.getText().toString(), "pending", amount, user.getUid(), dateTime, timestamp));
-                        Toast.makeText(WithdrawActivity.this, "The withdraw process will take 2 - 3 days to be finished as we need to authenticate", Toast.LENGTH_SHORT).show();
+                        toast(getString(R.string.withdraw_process));
                     }else{
-                        Toast.makeText(WithdrawActivity.this, "Your entered password didn't match your account password", Toast.LENGTH_SHORT).show();
+                        toast(getString(R.string.password_not_match));
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -154,7 +142,7 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
 
         dateTime = simpleDateFormat.format(new java.util.Date());
 
-        Long timestampLong = System.currentTimeMillis()/1000;
+        long timestampLong = System.currentTimeMillis()/1000;
         timestamp = Long.toString(timestampLong);
     }
 
@@ -165,12 +153,14 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Long balance = dataSnapshot.getValue(Long.class);
 
-                withdrawBalance.setText("IDR " + balance);
+                if (balance!=null){
+                    withdrawBalance.setText(getString(R.string.price, balance));
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                toast(getString(R.string.retrieve_failed));
             }
         });
     }
@@ -182,10 +172,16 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
     }
 
     private void checkEditText(){
-        if (accountNameET.getText().toString().isEmpty()){
-            accountNameET.setError("Bank Holder name shouldn't be empty");
+        if(amountET.getText().toString().isEmpty()){
+            amountET.setError(getString(R.string.withdraw_amount_error));
+        }else if(passwordET.getText().toString().isEmpty()){
+            passwordET.setError(getString(R.string.password_field_error));
+        }else if(passwordET.getText().toString().length() < 7){
+            passwordET.setError(getString(R.string.password_field_error_character));
+        }else if (accountNameET.getText().toString().isEmpty()){
+            accountNameET.setError(getString(R.string.bank_holder_error));
         }else if (accountNumberET.getText().toString().isEmpty()){
-            accountNumberET.setError("Bank Number shouldn't be empty");
+            accountNumberET.setError(getString(R.string.bank_number_error));
         }else{
             savetoDatabase();
             updateBalance();
@@ -218,8 +214,6 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
     public void onClick(View v) {
         if (v.getId() == R.id.withdraw_SendButton) {
             checkEditText();
-        } else {
-            Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -227,5 +221,9 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.teacher_withdraw_menu, menu);
         return true;
+    }
+
+    private void toast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

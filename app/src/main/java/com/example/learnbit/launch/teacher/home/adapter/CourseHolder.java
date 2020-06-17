@@ -14,6 +14,7 @@ import com.example.learnbit.launch.teacher.home.coursedetail.CourseDetailActivit
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -60,82 +61,100 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
     //apply course information to cell
     //receive Course Object parameter
     public void setCourse(Course course, String key){
-        //set global variable key to key parameter value
-        this.key = key;
+        if (course!=null){
+            //set global variable key to key parameter value
+            this.key = key;
 
-        //get course name from course object
-        courseName = course.getCourseName();
+            //get course name from course object
+            courseName = course.getCourseName();
 
-        //get current time
-        Date currentTime = new Date();
+            //get current time
+            Date currentTime = Calendar.getInstance().getTime();
 
-        //simple date format is used to format date to the desired format
-        //this formatter convert date to "HOUR:MINUTES [AM/PM]" format
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
+            //initiate new date
+            Date startDate = new Date();
+            Date endDate = new Date();
 
-        //get the current time
-        //parse is used to convert the formatted date back to date
-        //catch error if parse failed
-        try {
-            currentTime = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-        }catch (ParseException e){
-            e.printStackTrace();
-        }
+            //date formatter
+            SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
 
-        //check if course is accepted/not
-        //if course is still pending, set course time textfield to "awaiting admin confirmation"
-        //if course is accepted, show next schedule for today
-        if (course.getCourseAcceptance().equals("pending")){
-            teacherCourseTime.setText(context.getString(R.string.awaiting_admin_confirmation));
-        }else {
-            //loop through course time for next course time
-            for (HashMap.Entry<String, Boolean> entry : course.getCourseTime().entrySet()){
+            //simple date format is used to format date to the desired format
+            //this formatter convert date to "HOUR:MINUTES [AM/PM]" format
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
 
-                //check if course time is being taken
-                //if no time is taken, set to no schedule today
-                if (entry.getValue()) {
-                    //initiate current date
-                    Date courseTime = new Date();
-
-                    //parse current date using date formatter
-                    //catch error if parse failed
+            for (HashMap.Entry<String, String> entry : course.getCourseDate().entrySet()){
+                if (entry.getKey().equals("startDate")){
                     try {
-                        courseTime = simpleDateFormat.parse(entry.getKey());
-                    } catch (ParseException e) {
+                        startDate = simpleDateFormat1.parse(entry.getValue());
+                    }catch (ParseException e){
                         e.printStackTrace();
                     }
+                }else if (entry.getKey().equals("endDate")){
+                    try {
+                        endDate = simpleDateFormat1.parse(entry.getValue());
+                    }catch (ParseException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
 
-                    //check if current time is not null
-                    if (currentTime != null) {
+            //check if course is accepted/not
+            //if course is still pending, set course time textfield to "awaiting admin confirmation"
+            //if course is accepted, show next schedule for today
+            if (course.getCourseAcceptance().equals("pending")){
+                teacherCourseTime.setText(context.getString(R.string.awaiting_admin_confirmation));
+            }else {
+                if (currentTime.after(startDate) && currentTime.before(endDate)){
+                    //loop through course time for next course time
+                    for (HashMap.Entry<String, Boolean> entry : course.getCourseTime().entrySet()){
 
-                        //check if current time is not yet passing course time
-                        //if not yet pass the course time, then set to course time textfield
-                        //if passed then see next course time, if no course time ahead then set to no schedule today
-                        if (!currentTime.after(courseTime)) {
-                            teacherCourseTime.setText(context.getString(R.string.course_start_time, entry.getKey()));
-                        } else {
+                        //check if course time is being taken
+                        //if no time is taken, set to no schedule today
+                        if (entry.getValue()) {
+                            //initiate current date
+                            Date courseTime = new Date();
+
+                            //parse current date using date formatter
+                            //catch error if parse failed
+                            try {
+                                courseTime = simpleDateFormat.parse(entry.getKey());
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            //check if current time is not yet passing course time
+                            //if not yet pass the course time, then set to course time textfield
+                            //if passed then see next course time, if no course time ahead then set to no schedule today
+                            if (!currentTime.after(courseTime)) {
+                                teacherCourseTime.setText(context.getString(R.string.course_start_time, entry.getKey()));
+                            } else {
+                                teacherCourseTime.setText(context.getString(R.string.no_course));
+                            }
+                        }else{
                             teacherCourseTime.setText(context.getString(R.string.no_course));
                         }
                     }
-                }else{
-                    teacherCourseTime.setText(context.getString(R.string.no_course));
+                }else if (!currentTime.after(startDate) && currentTime.before(endDate)){
+                    teacherCourseTime.setText(context.getString(R.string.course_start_period));
+                }else if (currentTime.after(startDate) && !currentTime.before(endDate)){
+                    teacherCourseTime.setText(context.getString(R.string.course_end_period));
                 }
             }
+
+            //if course student is not null, set course student count field to total applied student
+            //if null, set to no student yet
+            if (course.getCourseStudent() != null){
+                teacherCourseStudentCount.setText(context.getString(R.string.course_student_count, course.getCourseStudent().size()));
+            }else{
+                teacherCourseStudentCount.setText(context.getString(R.string.no_course_student));
+            }
+
+            //set course name
+            teacherCourseName.setText(courseName);
+
+            //set course image
+            Glide.with(context).load(course.getCourseImageURL()).into(teacherCourseImageView);
         }
-
-        //if course student is not null, set course student count field to total applied student
-        //if null, set to no student yet
-        if (course.getCourseStudent() != null){
-            teacherCourseStudentCount.setText(context.getString(R.string.course_student_count, course.getCourseStudent().size()));
-        }else{
-            teacherCourseStudentCount.setText(context.getString(R.string.no_course_student));
-        }
-
-        //set course name
-        teacherCourseName.setText(courseName);
-
-        //set course image
-        Glide.with(context).load(course.getCourseImageURL()).into(teacherCourseImageView);
     }
 
     //cell onclick executed here

@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -22,13 +24,14 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.adapter.FilesAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.adapter.MaterialAdapter;
+import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.adapter.SubmitAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.File;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.Material;
+import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.Submit;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,7 +42,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -47,26 +49,33 @@ import java.util.ArrayList;
 
 public class SupportingFilesActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private TextView uploadingTextView;
-    private RecyclerView filesRecyclerView, materialRecyclerView;
+    //initiate elements' variables
+    private TextView uploadingTextView, submitTextView;
+    private RecyclerView filesRecyclerView, materialRecyclerView, submitRecyclerView;
 
+    //upload files result key
     private static final int RESULT_UPLOAD_FILES = 0;
 
-    private ArrayList<File> fileArray = new ArrayList<>();
+    //initiate file and material adapter
     private FilesAdapter filesAdapter;
-
-    private ArrayList<Material> materialArrayList = new ArrayList<>();
     private MaterialAdapter materialAdapter;
+    private SubmitAdapter submitAdapter;
 
-    private Uri fileUri;
-    private String fileName;
+    //initiate variables
+    private ArrayList<File> fileArray = new ArrayList<>();
+    private ArrayList<Material> materialArrayList = new ArrayList<>();
+    private ArrayList<Submit> submitArrayList = new ArrayList<>();
+    private String courseName, courseSectionTopic, courseWeek, courseSectionPart, courseKey, courseSectionType;
 
+    //initiate firebase variables
     private FirebaseUser user;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
 
-    private String courseName, courseSectionTopic, courseWeek, courseSectionPart;
+    //initiate preference key to retrieve shared preference data
+    private static final String detailPreference = "DETAIL_PREFERENCE";
 
+    //execute when activity is created
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,27 +84,135 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         materialRecyclerView = findViewById(R.id.uploadedRecyclerView);
         filesRecyclerView = findViewById(R.id.filesRecyclerView);
         uploadingTextView = findViewById(R.id.uploadingTextView);
+        submitTextView = findViewById(R.id.submitTextView);
+        submitRecyclerView = findViewById(R.id.submitRecyclerView);
         FloatingActionButton addFilesButton = findViewById(R.id.addFilesButton);
 
-        setupToolbar();
         retrieveIntentData();
+        getPreferenceData();
+        setupToolbar();
         setupFilesRecyclerView();
+        setupMaterialRecyclerView();
+        validateContent();
         setupFirebase();
         retrieveData();
-        setupMaterialRecyclerView();
+        retrieveSubmitData();
         handleRecyclerViewSwipe();
 
+        //set button click listener to overriding method
         addFilesButton.setOnClickListener(this);
     }
 
+    //retrieve stored data from shared preference
+    private void getPreferenceData(){
+        String preferenceKey = "courseKey";
+
+        SharedPreferences preferences = getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
+        courseKey = preferences.getString(preferenceKey, "");
+    }
+
+    //setup custom toolbar
     private void setupToolbar(){
         if (getSupportActionBar() != null){
-            getSupportActionBar().setTitle("Add Materials");
+            getSupportActionBar().setTitle("Materials");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
     }
 
+    //setup file recyclerview
+    private void setupFilesRecyclerView(){
+        filesAdapter = new FilesAdapter(fileArray);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        filesRecyclerView.setLayoutManager(layoutManager);
+        filesRecyclerView.setAdapter(filesAdapter);
+        filesRecyclerView.setHasFixedSize(true);
+    }
+
+    //setup material recyclerview
+    private void setupMaterialRecyclerView(){
+        materialAdapter = new MaterialAdapter(materialArrayList, courseWeek, courseName, courseSectionPart, courseSectionTopic);
+        RecyclerView.LayoutManager materialLayoutManager = new LinearLayoutManager(getApplicationContext());
+        materialRecyclerView.setLayoutManager(materialLayoutManager);
+        materialRecyclerView.setAdapter(materialAdapter);
+        materialRecyclerView.setHasFixedSize(true);
+    }
+
+    //retrieve passed intent data
+    private void retrieveIntentData(){
+        courseName = getIntent().getStringExtra("courseName");
+        courseSectionTopic = getIntent().getStringExtra("courseSectionTopic");
+        courseWeek = getIntent().getStringExtra("courseWeek");
+        courseSectionPart = getIntent().getStringExtra("courseSectionPart");
+        courseSectionType = getIntent().getStringExtra("courseSectionType");
+    }
+
+    private void validateContent(){
+        if (courseSectionType.equals("Video Call")){
+            submitTextView.setVisibility(View.INVISIBLE);
+            submitRecyclerView.setVisibility(View.INVISIBLE);
+        }else if (courseSectionType.equals("Quiz")){
+            setupSubmitRecyclerView();
+        }
+    }
+
+    private void setupSubmitRecyclerView(){
+        submitAdapter = new SubmitAdapter(submitArrayList, courseWeek, courseName, courseSectionPart);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        submitRecyclerView.setLayoutManager(layoutManager);
+        submitRecyclerView.setAdapter(submitAdapter);
+    }
+
+    private void retrieveSubmitData(){
+        Query query = databaseReference.child(user.getUid())
+                .child(courseKey)
+                .child("courseCurriculum")
+                .child(courseWeek)
+                .child("topics")
+                .child(courseSectionPart)
+                .child("sectionTopicSubmit");
+
+        query.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Submit submit = dataSnapshot.getValue(Submit.class);
+
+                if (submit!=null){
+                    submitArrayList.add(new Submit(submit.getSubmitFileName(), submit.getSubmitFileUrl(), submit.getUserUid()));
+                    submitAdapter.notifyItemInserted(submitArrayList.size() - 1);
+
+                    if (submitArrayList.size() != 0){
+                        submitTextView.setVisibility(View.VISIBLE);
+                        submitRecyclerView.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                submitAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //setup firebase instance
     private void setupFirebase(){
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -106,89 +223,46 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child(courseWeek).child("topics").child(courseSectionPart).child(courseSectionTopic);
     }
 
-    private void setupFilesRecyclerView(){
-        filesAdapter = new FilesAdapter(fileArray, this);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        filesRecyclerView.setLayoutManager(layoutManager);
-        filesRecyclerView.setAdapter(filesAdapter);
-    }
-
-    private void setupMaterialRecyclerView(){
-        materialAdapter = new MaterialAdapter(materialArrayList, courseWeek, courseName, courseSectionPart, courseSectionTopic);
-        RecyclerView.LayoutManager materialLayoutManager = new LinearLayoutManager(getApplicationContext());
-        materialRecyclerView.setLayoutManager(materialLayoutManager);
-        materialRecyclerView.setAdapter(materialAdapter);
-    }
-
-    private void retrieveIntentData(){
-        courseName = getIntent().getStringExtra("courseName");
-        courseSectionTopic = getIntent().getStringExtra("courseSectionTopic");
-        courseWeek = getIntent().getStringExtra("courseWeek");
-        courseSectionPart = getIntent().getStringExtra("courseSectionPart");
-    }
-
+    //retrieve material data
     private void retrieveData(){
-        Query query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
+        Query query = databaseReference.child(user.getUid())
+                .child(courseKey)
+                .child("courseCurriculum")
+                .child(courseWeek)
+                .child("topics")
+                .child(courseSectionPart)
+                .child("sectionTopicMaterials");
 
-        query.addValueEventListener(new ValueEventListener() {
+        query.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Material material = dataSnapshot.getValue(Material.class);
 
-                materialArrayList.clear();
-                materialAdapter.notifyDataSetChanged();
+                if (material!=null){
+                    materialArrayList.add(new Material(material.getMaterialName(), material.getMaterialURL()));
+                    materialAdapter.notifyItemInserted(materialArrayList.size() - 1);
 
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    String key = ds.getKey();
-
-                    if (key!=null){
-                        Query query1 = databaseReference.child(user.getUid())
-                                .child(key)
-                                .child("courseCurriculum")
-                                .child(courseWeek)
-                                .child("topics")
-                                .child(courseSectionPart)
-                                .child("sectionTopicMaterials");
-
-                        query1.addChildEventListener(new ChildEventListener() {
-                            @Override
-                            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                                Material material = dataSnapshot.getValue(Material.class);
-
-                                if (material!=null){
-                                    materialArrayList.add(new Material(material.getMaterialName(), material.getMaterialURL()));
-                                    materialAdapter.notifyItemInserted(materialArrayList.size() - 1);
-
-
-                                    if (materialArrayList.size() != 0){
-                                        materialRecyclerView.setVisibility(View.VISIBLE);
-                                    }
-                                }
-
-                                materialAdapter.notifyDataSetChanged();
-                            }
-
-                            @Override
-                            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                            }
-
-                            @Override
-                            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-                            }
-
-                            @Override
-                            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
+                    if (materialArrayList.size() != 0){
+                        materialRecyclerView.setVisibility(View.VISIBLE);
                     }
                 }
+
+                materialAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
             }
 
             @Override
@@ -198,6 +272,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         });
     }
 
+    //select files from file manager
     private void selectFiles(){
         Intent intent = new Intent();
         intent.setType("application/pdf");
@@ -206,20 +281,24 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         startActivityForResult(Intent.createChooser(intent, "Select Files"), RESULT_UPLOAD_FILES);
     }
 
+    //select files activity result
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RESULT_UPLOAD_FILES && resultCode == Activity.RESULT_OK){
             if (data!=null){
+                fileArray.clear();
+                filesAdapter.notifyDataSetChanged();
+
                 if (data.getClipData() != null){
                     uploadingTextView.setVisibility(View.VISIBLE);
 
                     int totalSelectedItem = data.getClipData().getItemCount();
 
                     for (int i=0;i<totalSelectedItem;i++){
-                        fileUri = data.getClipData().getItemAt(i).getUri();
-                        fileName = getFileName(fileUri);
+                        Uri fileUri = data.getClipData().getItemAt(i).getUri();
+                        String fileName = getFileName(fileUri);
 
                         fileArray.add(new File(fileName, false));
                         filesAdapter.notifyDataSetChanged();
@@ -235,52 +314,58 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
                                         String topicName = fileArray.get(position).getName();
                                         Log.d("courseURL", topicURL);
 
-                                        Query query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
-
-                                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                                for (DataSnapshot ds : dataSnapshot.getChildren()){
-                                                    String key = ds.getKey();
-
-                                                    if (key!=null){
-                                                        databaseReference.child(user.getUid())
-                                                                .child(key)
-                                                                .child("courseCurriculum")
-                                                                .child(courseWeek)
-                                                                .child("topics")
-                                                                .child(courseSectionPart)
-                                                                .child("sectionTopicMaterials")
-                                                                .child("material " + (materialArrayList.size() + 1))
-                                                                .setValue(new Material(topicName, topicURL)).addOnSuccessListener(aVoid -> {
-                                                                    fileArray.get(position).setUpload(true);
-
-                                                                    filesAdapter.notifyDataSetChanged();
-                                                                });
-                                                    }
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                            }
-                                        });
+                                        databaseReference.child(user.getUid())
+                                                .child(courseKey)
+                                                .child("courseCurriculum")
+                                                .child(courseWeek)
+                                                .child("topics")
+                                                .child(courseSectionPart)
+                                                .child("sectionTopicMaterials")
+                                                .child("material " + (materialArrayList.size() + 1))
+                                                .setValue(new Material(topicName, topicURL)).addOnSuccessListener(aVoid -> materialAdapter.notifyDataSetChanged());
                                     });
                                 }
                             }
                         });
-
                     }
 
+
+
                 }else if (data.getData() != null){
-                    Toast.makeText(getApplicationContext(), "select single files", Toast.LENGTH_SHORT).show();
+                    uploadingTextView.setVisibility(View.VISIBLE);
+                    Uri fileUri = data.getData();
+                    String fileName = getFileName(fileUri);
+
+                    fileArray.add(new File(fileName, false));
+                    filesAdapter.notifyDataSetChanged();
+
+                    storageReference.child(fileName).putFile(fileUri).addOnSuccessListener(taskSnapshot -> {
+                        if (taskSnapshot.getMetadata()!=null){
+                            if (taskSnapshot.getMetadata().getReference()!=null){
+                                Task<Uri> result = taskSnapshot.getStorage().getDownloadUrl();
+                                result.addOnSuccessListener(uri -> {
+                                    String topicURL = uri.toString();
+                                    String topicName = fileArray.get(fileArray.size()-1).getName();
+
+                                    databaseReference.child(user.getUid())
+                                            .child(courseKey)
+                                            .child("courseCurriculum")
+                                            .child(courseWeek)
+                                            .child("topics")
+                                            .child(courseSectionPart)
+                                            .child("sectionTopicMaterials")
+                                            .child("material " + (materialArrayList.size() + 1))
+                                            .setValue(new Material(topicName, topicURL)).addOnSuccessListener(aVoid -> materialAdapter.notifyDataSetChanged());
+                                });
+                            }
+                        }
+                    });
                 }
             }
         }
     }
 
+    //get selected file name
     private String getFileName(Uri uri){
         String result = null;
         if (uri.getScheme()!=null && uri.getScheme().equals("content")){
@@ -306,15 +391,15 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         return result;
     }
 
+    //execute elements action when clicked
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.addFilesButton){
             selectFiles();
-        }else{
-            Toast.makeText(this, "Nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
+    //recyclerview swipe actions
     private void handleRecyclerViewSwipe(){
         ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
@@ -328,8 +413,6 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
 
                 switch (direction){
                     case ItemTouchHelper.LEFT:
-                        setDeleteAlertAt(position);
-                        break;
                     case ItemTouchHelper.RIGHT:
                         setDeleteAlertAt(position);
                         break;
@@ -380,49 +463,28 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         itemTouchHelper.attachToRecyclerView(materialRecyclerView);
     }
 
+    //show delete notice
     private void setDeleteAlertAt(int position){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        builder.setMessage("Are you sure you want to delete this file?");
-        builder.setPositiveButton("YES", (dialog, which) -> {
-            deleteItem(position);
+        builder.setMessage(getString(R.string.delete_file_notice));
+        builder.setPositiveButton("YES", (dialog, which) -> deleteItem(position));
 
-            materialAdapter.notifyDataSetChanged();
-        });
-
-        builder.setNegativeButton("NO", (dialog, which) -> {
-            materialAdapter.notifyDataSetChanged();
-        });
+        builder.setNegativeButton("NO", (dialog, which) -> {});
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
     private void deleteItem(int position){
-        Query query = databaseReference.child(user.getUid()).orderByChild("courseName").startAt(courseName);
+        databaseReference.child(user.getUid())
+                .child(courseKey)
+                .child("courseCurriculum")
+                .child(courseWeek)
+                .child("topics")
+                .child(courseSectionPart)
+                .child("sectionTopicMaterials").child("material " + (position + 1)).removeValue();
 
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    String key = ds.getKey();
-
-                    if (key!=null){
-                        databaseReference.child(user.getUid())
-                                .child(key)
-                                .child("courseCurriculum")
-                                .child(courseWeek)
-                                .child("topics")
-                                .child(courseSectionPart)
-                                .child("sectionTopicMaterials").child("material " + (position + 1)).removeValue();
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        materialAdapter.notifyDataSetChanged();
     }
 
     @Override

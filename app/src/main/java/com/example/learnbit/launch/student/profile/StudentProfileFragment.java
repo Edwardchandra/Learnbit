@@ -21,13 +21,10 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
-import com.example.learnbit.launch.extension.RemoveSinchService;
 import com.example.learnbit.launch.model.userdata.User;
-import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.student.profile.accountsettings.StudentEditProfileActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.reusableactivity.ChangePasswordActivity;
-import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -45,20 +42,13 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
-
     private FirebaseDatabase firebaseDatabase;
     private DatabaseReference databaseReference;
-
-    private FirebaseStorage firebaseStorage;
     private StorageReference storageReference;
-
     private ValueEventListener userEventListener;
 
     private static final String detailPreference = "LOGIN_PREFERENCE";
 
-    private RemoveSinchService removeSinchService;
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -75,6 +65,8 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
         ConstraintLayout switchButton = view.findViewById(R.id.studentProfile_SwitchButton);
         ConstraintLayout signOutButton = view.findViewById(R.id.studentProfile_SignOutButton);
 
+        studentImage.setClipToOutline(true);
+
         editProfileButton.setOnClickListener(this);
         changePasswordButton.setOnClickListener(this);
         shareButton.setOnClickListener(this);
@@ -88,8 +80,6 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
         retrieveData();
         retrieveDataFromStorage();
 
-        studentImage.setClipToOutline(true);
-
         return view;
     }
 
@@ -99,7 +89,7 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
 
         user = firebaseAuth.getCurrentUser();
 
-        firebaseStorage = FirebaseStorage.getInstance();
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference().child("Users").child(user.getUid()).child("profileimage");
     }
 
@@ -110,7 +100,6 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 User user = dataSnapshot.getValue(User.class);
-
                 if (user!=null){
                     studentName.setText(user.getName());
                     studentEmail.setText(user.getEmail());
@@ -119,7 +108,7 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(getContext(), getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -129,7 +118,6 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
     @Override
     public void onStop() {
         super.onStop();
-
         databaseReference.removeEventListener(userEventListener);
     }
 
@@ -148,16 +136,13 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
                 shareAction();
                 break;
             case R.id.studentProfile_SwitchButton:
-                changePreferenceData("teacher");
+                changePreferenceData();
                 Intent switchIntent = new Intent(getContext(), TeacherMainActivity.class);
                 startActivity(switchIntent);
                 break;
             case R.id.studentProfile_SignOutButton:
-                removeSinchService.removeSinchService();
                 firebaseAuth.signOut();
                 break;
-            default:
-                Toast.makeText(getContext(), "Nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -170,12 +155,12 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
         startActivity(Intent.createChooser(sharingIntent, "Share via"));
     }
 
-    private void changePreferenceData(String role){
+    private void changePreferenceData(){
         if (getActivity()!=null){
             SharedPreferences preferences = getActivity().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
 
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("role", role);
+            editor.putString("role", "teacher");
             editor.apply();
         }
     }
@@ -185,15 +170,16 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
             if (getActivity() != null){
                 Glide.with(getActivity()).load(uri).into(studentImage);
             }
-        }).addOnFailureListener(e -> Toast.makeText(getContext(), "failed to retrieve image", Toast.LENGTH_SHORT).show());
+        }).addOnFailureListener(e -> Toast.makeText(getContext(), getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show());
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void setStatusBarColor(){
         if (getActivity()==null) return;
 
-        getActivity().getWindow().setStatusBarColor(Color.WHITE);
-        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            getActivity().getWindow().setStatusBarColor(Color.WHITE);
+            getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
     }
 
 }

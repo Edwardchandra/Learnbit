@@ -8,57 +8,55 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.adapter.SectionAdapter;
-import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Content;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class YourCourseFragment extends Fragment {
 
+    //initiate elements' variable
     private RecyclerView sectionRecyclerView;
     private TextView courseSummary;
 
+    //initiate preference key to retrieve shared preference data
     private static final String detailPreference = "DETAIL_PREFERENCE";
+
+    //initiate firebase variables
+    private FirebaseUser user;
+    private FirebaseDatabase firebaseDatabase;
+
+    //initiate recyclerview section adapter
+    private SectionAdapter sectionAdapter;
+
+    //initiate variables
+    private ArrayList<Section> sectionArrayList = new ArrayList<>();
     private String courseKey;
 
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser user;
-
-    private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference databaseReference;
-
-    private ArrayList<Section> sectionArrayList = new ArrayList<>();
-
+    //constructor
     public YourCourseFragment() {}
 
+    //execute when fragment is created
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -68,73 +66,75 @@ public class YourCourseFragment extends Fragment {
         courseSummary = view.findViewById(R.id.teacherCourse_Summary);
         sectionRecyclerView = view.findViewById(R.id.teacherCourse_SectionRecyclerView);
 
+        getPreferenceData();
         setupFirebase();
+        setupRecyclerView();
         retrieveData();
 
         return view;
     }
 
+    //setup recyclerview layout tipe and adapter
     private void setupRecyclerView(){
-        SectionAdapter sectionAdapter = new SectionAdapter(sectionArrayList);
+        sectionAdapter = new SectionAdapter(sectionArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         sectionRecyclerView.setLayoutManager(layoutManager);
         sectionRecyclerView.setAdapter(sectionAdapter);
     }
 
+    //retrieve stored data from shared preference
     private void getPreferenceData(){
+        String preferenceKey = "courseKey";
+
         if (getActivity()!=null){
             SharedPreferences preferences = getActivity().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
-            courseKey = preferences.getString("courseKey", "");
-
-            Log.d("coursekey0", courseKey + " ");
+            courseKey = preferences.getString(preferenceKey, "");
         }
     }
 
+    //setup firebase instance
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
 
         user = firebaseAuth.getCurrentUser();
     }
 
+    //retrieve course data from firebase database
     private void retrieveData(){
-        getPreferenceData();
-
-        databaseReference = firebaseDatabase.getReference("Course");
-        Query query = databaseReference.child(user.getUid()).child(courseKey);
-
-        Log.d("coursekey0", courseKey);
-
         sectionArrayList.clear();
+        sectionAdapter.notifyDataSetChanged();
 
-        query.addValueEventListener(new ValueEventListener() {
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).child(courseKey);
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Course course = dataSnapshot.getValue(Course.class);
 
                 if (course!=null){
-                    Log.d("course", course.getCourseCurriculum() + " ");
+                    courseSummary.setText(course.getCourseSummary());
 
                     for (HashMap.Entry<String, Section> entry : course.getCourseCurriculum().entrySet()) {
-                        String key = entry.getKey();
-                        Section value = entry.getValue();
-
-                        sectionArrayList.add(new Section(key, value.getName(), value.getTopics()));
+                        sectionArrayList.add(new Section(entry.getKey(), entry.getValue().getName(), entry.getValue().getTopics()));
                         sectionArrayList.sort(Comparator.comparing(Section::getWeek));
-
-                        Log.d("section", sectionArrayList + " ");
                     }
-
-                    setupRecyclerView();
                 }
+
+                sectionAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                toast(getString(R.string.retrieve_failed));
             }
         });
+    }
+
+    //show toast
+    private void toast(String message){
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
 }

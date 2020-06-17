@@ -238,6 +238,7 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
                 String courseKey = "";
                 int studentCount = 0;
                 HashMap<String, String> courseSchedule = new HashMap<>();
+                HashMap<String, String> courseDate = new HashMap<>();
                 String courseImageURL = "";
 
                 for (DataSnapshot ds: dataSnapshot.getChildren()){
@@ -254,6 +255,7 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
 
                         courseSchedule = course.getCourseSchedule();
                         courseImageURL = course.getCourseImageURL();
+                        courseDate = course.getCourseDate();
                     }
                 }
 
@@ -263,7 +265,7 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
                             .child("student")
                             .child("courses")
                             .child(courseKey)
-                            .setValue(new StudentCourse(key, spinnerValue, courseSchedule, courseName, courseImageURL));
+                            .setValue(new StudentCourse(key, spinnerValue, courseSchedule, courseName, courseImageURL, courseDate));
                     firebaseDatabase.getReference("Course").child(key).child(courseKey).child("courseStudent").child("student " + (studentCount + 1)).setValue(user.getUid());
                     firebaseDatabase.getReference("Course").child(key).child(courseKey).child("courseTime").child(spinnerValue).setValue(true);
 

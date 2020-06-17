@@ -31,12 +31,12 @@ public class CourseBenefitAdapter extends RecyclerView.Adapter<CourseBenefitAdap
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View view = layoutInflater.inflate(R.layout.item_benefits_edittext, parent, false);
 
-        return new CourseBenefitAdapter.CourseBenefitViewHolder(view);
+        return new CourseBenefitViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CourseBenefitAdapter.CourseBenefitViewHolder holder, final int position) {
-        holder.courseBenefitET.setHint("What will your student learn?");
+        holder.courseBenefitET.setHint(context.getString(R.string.benefit_hint));
         holder.courseBenefitET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -56,14 +56,13 @@ public class CourseBenefitAdapter extends RecyclerView.Adapter<CourseBenefitAdap
         return (benefitArrayList == null) ? 0 : benefitArrayList.size();
     }
 
-    public class CourseBenefitViewHolder extends RecyclerView.ViewHolder{
+    public static class CourseBenefitViewHolder extends RecyclerView.ViewHolder{
 
         private EditText courseBenefitET;
 
         public CourseBenefitViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            courseBenefitET = (EditText) itemView.findViewById(R.id.addCourse_CourseBenefits);
+            courseBenefitET = itemView.findViewById(R.id.addCourse_CourseBenefits);
         }
     }
 

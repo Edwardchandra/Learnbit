@@ -57,12 +57,13 @@ public class Course {
         this.courseImageURL = courseImageURL;
     }
 
-    public Course(String courseName, String courseAcceptance, String courseImageURL, HashMap<String, Boolean> courseTime, HashMap<String, String> courseStudent) {
+    public Course(String courseName, String courseAcceptance, String courseImageURL, HashMap<String, Boolean> courseTime, HashMap<String, String> courseStudent, HashMap<String, String> courseDate) {
         this.courseName = courseName;
         this.courseAcceptance = courseAcceptance;
         this.courseImageURL = courseImageURL;
         this.courseTime = courseTime;
         this.courseStudent = courseStudent;
+        this.courseDate = courseDate;
     }
 
     public Course() {}

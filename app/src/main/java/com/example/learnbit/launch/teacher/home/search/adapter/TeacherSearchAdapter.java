@@ -27,16 +27,20 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdapter.TeacherSearchViewHolder> {
 
+    //initiate variables
     private ArrayList<Course> courseArrayList;
     private ArrayList<String> keyArrayList;
 
+    //initiate preference key variable
     private static final String detailPreference = "DETAIL_PREFERENCE";
 
+    //constructor
     public TeacherSearchAdapter(ArrayList<Course> courseArrayList, ArrayList<String> keyArrayList) {
         this.courseArrayList = courseArrayList;
         this.keyArrayList = keyArrayList;
     }
 
+    //inflate each recycler view cell with layout
     @NonNull
     @Override
     public TeacherSearchAdapter.TeacherSearchViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -46,25 +50,44 @@ public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdap
         return new TeacherSearchAdapter.TeacherSearchViewHolder(view);
     }
 
+    //set layout elements in each cell with values
     @Override
     public void onBindViewHolder(@NonNull TeacherSearchAdapter.TeacherSearchViewHolder holder, int position) {
+
+        //set course name
         holder.teacherCourseName.setText(courseArrayList.get(position).getCourseName());
+
+        //set course image
         Glide.with(holder.context).load(courseArrayList.get(position).getCourseImageURL()).into(holder.teacherCourseImageView);
 
         //get current time
         Date currentTime = new Date();
 
+        //initiate new date
+        Date startDate = new Date();
+        Date endDate = new Date();
+
+        //date formatter
+        SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
+
         //simple date format is used to format date to the desired format
         //this formatter convert date to "HOUR:MINUTES [AM/PM]" format
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
 
-        //get the current time
-        //parse is used to convert the formatted date back to date
-        //catch error if parse failed
-        try {
-            currentTime = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-        }catch (ParseException e){
-            e.printStackTrace();
+        for (HashMap.Entry<String, String> entry : courseArrayList.get(position).getCourseDate().entrySet()){
+            if (entry.getKey().equals("startDate")){
+                try {
+                    startDate = simpleDateFormat1.parse(entry.getValue());
+                }catch (ParseException e){
+                    e.printStackTrace();
+                }
+            }else if (entry.getKey().equals("endDate")){
+                try {
+                    endDate = simpleDateFormat1.parse(entry.getValue());
+                }catch (ParseException e){
+                    e.printStackTrace();
+                }
+            }
         }
 
         //check if course is accepted/not
@@ -73,25 +96,23 @@ public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdap
         if (courseArrayList.get(position).getCourseAcceptance().equals("pending")){
             holder.teacherCourseTime.setText(holder.context.getString(R.string.awaiting_admin_confirmation));
         }else {
-            //loop through course time for next course time
-            for (HashMap.Entry<String, Boolean> entry : courseArrayList.get(position).getCourseTime().entrySet()){
+            if (currentTime.after(startDate) && currentTime.before(endDate)){
+                //loop through course time for next course time
+                for (HashMap.Entry<String, Boolean> entry : courseArrayList.get(position).getCourseTime().entrySet()){
 
-                //check if course time is being taken
-                //if no time is taken, set to no schedule today
-                if (entry.getValue()) {
-                    //initiate current date
-                    Date courseTime = new Date();
+                    //check if course time is being taken
+                    //if no time is taken, set to no schedule today
+                    if (entry.getValue()) {
+                        //initiate current date
+                        Date courseTime = new Date();
 
-                    //parse current date using date formatter
-                    //catch error if parse failed
-                    try {
-                        courseTime = simpleDateFormat.parse(entry.getKey());
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-
-                    //check if current time is not null
-                    if (currentTime != null) {
+                        //parse current date using date formatter
+                        //catch error if parse failed
+                        try {
+                            courseTime = simpleDateFormat.parse(entry.getKey());
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
 
                         //check if current time is not yet passing course time
                         //if not yet pass the course time, then set to course time textfield
@@ -101,10 +122,14 @@ public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdap
                         } else {
                             holder.teacherCourseTime.setText(holder.context.getString(R.string.no_course));
                         }
+                    }else{
+                        holder.teacherCourseTime.setText(holder.context.getString(R.string.no_course));
                     }
-                }else{
-                    holder.teacherCourseTime.setText(holder.context.getString(R.string.no_course));
                 }
+            }else if (!currentTime.after(startDate) && currentTime.before(endDate)){
+                holder.teacherCourseTime.setText(holder.context.getString(R.string.course_start_period));
+            }else if (currentTime.after(startDate) && !currentTime.before(endDate)){
+                holder.teacherCourseTime.setText(holder.context.getString(R.string.course_end_period));
             }
         }
 

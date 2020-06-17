@@ -2,7 +2,6 @@ package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.cour
 
 import android.content.Context;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +22,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionViewHolder> {
 
+    //variable
     private ArrayList<Section> sectionArrayList;
 
+    //construcotr
     public SectionAdapter(ArrayList<Section> sectionArrayList) {
         this.sectionArrayList = sectionArrayList;
     }
 
+    //set layout file
     @NonNull
     @Override
     public SectionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -38,12 +40,11 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
         return new SectionViewHolder(view);
     }
 
+    //set data for cell
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onBindViewHolder(@NonNull SectionViewHolder holder, int position) {
-        Log.d("sectionaja", sectionArrayList.size() + " ");
-
-        holder.sectionName.setText(sectionArrayList.get(position).getWeek() + " - " +sectionArrayList.get(position).getName());
+        holder.sectionName.setText(holder.context.getString(R.string.divider, sectionArrayList.get(position).getWeek(), sectionArrayList.get(position).getName()));
 
         for (HashMap.Entry<String, Content> entry : sectionArrayList.get(position).getTopics().entrySet()){
             String key = entry.getKey();
@@ -53,30 +54,39 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
             holder.contentArrayList.sort(Comparator.comparing(Content::getSectionPart));
         }
 
-        ContentAdapter contentAdapter = new ContentAdapter(holder.contentArrayList, holder.context, sectionArrayList.get(position).getWeek());
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(holder.context);
-        holder.contentRV.setLayoutManager(layoutManager);
-        holder.contentRV.setAdapter(contentAdapter);
+        holder.setupRecyclerView(sectionArrayList.get(position).getWeek());
     }
 
+    //set cell count
     @Override
     public int getItemCount() {
         return (sectionArrayList == null) ? 0 : sectionArrayList.size();
     }
 
-    public class SectionViewHolder extends RecyclerView.ViewHolder{
+    //view holder
+    public static class SectionViewHolder extends RecyclerView.ViewHolder{
 
+        //element variable
         private TextView sectionName;
         private RecyclerView contentRV;
         private Context context;
         private ArrayList<Content> contentArrayList = new ArrayList<>();
 
+        //constructor
         public SectionViewHolder(@NonNull View itemView) {
             super(itemView);
 
             sectionName = itemView.findViewById(R.id.teacherCourse_SectionName);
             contentRV = itemView.findViewById(R.id.teacherCourse_ContentRecyclerView);
             context = itemView.getContext();
+        }
+
+        //setup content recyclerview
+        private void setupRecyclerView(String week){
+            ContentAdapter contentAdapter = new ContentAdapter(contentArrayList, context, week);
+            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
+            contentRV.setLayoutManager(layoutManager);
+            contentRV.setAdapter(contentAdapter);
         }
     }
 }

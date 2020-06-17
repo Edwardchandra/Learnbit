@@ -9,13 +9,15 @@ public class StudentCourse {
     private HashMap<String, String> courseSchedule;
     private String courseName;
     private String courseImageURL;
+    private HashMap<String, String> courseDate;
 
-    public StudentCourse(String teacherUID, String courseTime, HashMap<String, String> courseSchedule, String courseName, String courseImageURL) {
+    public StudentCourse(String teacherUID, String courseTime, HashMap<String, String> courseSchedule, String courseName, String courseImageURL, HashMap<String, String> courseDate) {
         this.teacherUID = teacherUID;
         this.courseTime = courseTime;
         this.courseSchedule = courseSchedule;
         this.courseName = courseName;
         this.courseImageURL = courseImageURL;
+        this.courseDate = courseDate;
     }
 
     public StudentCourse() {
@@ -59,5 +61,13 @@ public class StudentCourse {
 
     public void setCourseImageURL(String courseImageURL) {
         this.courseImageURL = courseImageURL;
+    }
+
+    public HashMap<String, String> getCourseDate() {
+        return courseDate;
+    }
+
+    public void setCourseDate(HashMap<String, String> courseDate) {
+        this.courseDate = courseDate;
     }
 }

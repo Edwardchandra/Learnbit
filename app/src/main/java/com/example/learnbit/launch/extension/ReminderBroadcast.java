@@ -21,7 +21,6 @@ public class ReminderBroadcast extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
-
         managerCompat.notify(200, builder.build());
     }
 }

@@ -36,7 +36,7 @@ public class WithdrawHistoryAdapter extends RecyclerView.Adapter<WithdrawHistory
 
     @Override
     public void onBindViewHolder(@NonNull WithdrawHistoryViewHolder holder, int position) {
-        holder.title.setText("Withdraw request with amount of IDR " + withdrawArrayList.get(position).getAmount());
+        holder.title.setText(holder.itemView.getContext().getString(R.string.withdraw_title, withdrawArrayList.get(position).getAmount()));
         holder.status.setText(withdrawArrayList.get(position).getSent());
         holder.dateTime.setText(withdrawArrayList.get(position).getDateTime());
 
@@ -52,8 +52,7 @@ public class WithdrawHistoryAdapter extends RecyclerView.Adapter<WithdrawHistory
         return (withdrawArrayList == null) ? 0 : withdrawArrayList.size();
     }
 
-    public class WithdrawHistoryViewHolder extends RecyclerView.ViewHolder{
-
+    public static class WithdrawHistoryViewHolder extends RecyclerView.ViewHolder{
         private TextView title, status, dateTime;
 
         public WithdrawHistoryViewHolder(@NonNull View itemView) {
@@ -62,8 +61,6 @@ public class WithdrawHistoryAdapter extends RecyclerView.Adapter<WithdrawHistory
             title = itemView.findViewById(R.id.withdrawTitle);
             status = itemView.findViewById(R.id.withdrawStatus);
             dateTime = itemView.findViewById(R.id.withdrawDateTime);
-
-
         }
     }
 }

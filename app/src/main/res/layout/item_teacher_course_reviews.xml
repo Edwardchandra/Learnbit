@@ -24,6 +24,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
+                android:scaleType="centerCrop"
                 android:id="@+id/teacherCourse.ReviewImage"
                 android:layout_width="65dp"
                 android:layout_height="65dp"

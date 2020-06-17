@@ -1,18 +1,14 @@
 package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.studenttab;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,41 +25,40 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
-
+import java.util.Locale;
 
 public class StudentFragment extends Fragment {
 
+    //initiate elements variables
     private RecyclerView courseStudentRecyclerView;
     private TextView courseStudentNoStudentTV;
 
-    CourseStudentAdapter courseStudentAdapter;
+    //initiate recyclerview adapter class
+    private CourseStudentAdapter courseStudentAdapter;
+
+    //initiate variable
     ArrayList<CourseStudent> courseStudentArrayList = new ArrayList<>();
-
-    private static final String detailPreference = "DETAIL_PREFERENCE";
-
     private String courseKey;
 
+    //initiate preference key to retrieve Shared Preference data
+    private static final String detailPreference = "DETAIL_PREFERENCE";
+
+    //initiate firebase variables
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
 
-    private Course course = new Course();
-
+    //empty constructor
     public StudentFragment() {}
 
-    private CourseStudentAdapter.CourseStudentViewHolder courseStudentViewHolder;
-
-    String[] permissions = {
-            Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.CAMERA
-    };
-
-    private static final int PERMISSIONS_CODE = 1;
-
+    //oncreateview execute when fragment is created
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -72,25 +67,15 @@ public class StudentFragment extends Fragment {
         courseStudentRecyclerView = view.findViewById(R.id.teacherCourseDetailTab_StudentRecyclerView);
         courseStudentNoStudentTV = view.findViewById(R.id.teacherCourseDetail_NoStudent);
 
-        if (getView()!=null){
-            courseStudentViewHolder = new CourseStudentAdapter.CourseStudentViewHolder(getView());
-
-            if (!checkPermission(getContext(), permissions)){
-                if (getActivity()!=null){
-                    ActivityCompat.requestPermissions(getActivity(), permissions, PERMISSIONS_CODE);
-                }
-            }else{
-                Toast.makeText(getContext(), "permission granted", Toast.LENGTH_SHORT).show();
-            }
-        }
-
+        getPreferenceData();
         setupFirebase();
-        retrieveData();
         setupRecyclerView();
+        retrieveData();
 
         return view;
     }
 
+    //retrieve stored shared preference data
     private void getPreferenceData(){
         if (getActivity()!=null){
             SharedPreferences preferences = getActivity().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
@@ -98,6 +83,7 @@ public class StudentFragment extends Fragment {
         }
     }
 
+    //setup firebase instance
     private void setupFirebase(){
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -105,53 +91,90 @@ public class StudentFragment extends Fragment {
         user = firebaseAuth.getCurrentUser();
     }
 
+    //retrieve student data from firebase database and store to arraylist
     private void retrieveData(){
-        getPreferenceData();
 
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
-        Query query = databaseReference.child(user.getUid()).child(courseKey);
-
+        //clear arraylist before attempt to retrieve data
         courseStudentArrayList.clear();
+        courseStudentAdapter.notifyDataSetChanged();
 
-        query.addValueEventListener(new ValueEventListener() {
+        //get reference path to stored data
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).child(courseKey);
+
+        //add listener to listen to data
+        //value event listener always listen to data, if there's data change in firebase database, data displayed automatically change
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                //retrieve course data
                 String courseKey = dataSnapshot.getKey();
-                course = dataSnapshot.getValue(Course.class);
+                Course course = dataSnapshot.getValue(Course.class);
 
+                //check if course and coursekey is not null
                 if (course != null && courseKey != null){
-                    if (course.getCourseStudent()!=null){
-                        HashMap<String, String> courseStudent = course.getCourseStudent();
 
-                        if (courseStudent.size() == 0){
-                            courseStudentRecyclerView.setVisibility(View.INVISIBLE);
-                            courseStudentNoStudentTV.setVisibility(View.VISIBLE);
-                        }else{
+                    //get current time
+                    Date currentTime = Calendar.getInstance().getTime();
+
+                    //initiate new date
+                    Date startDate = new Date();
+                    Date endDate = new Date();
+
+                    //date formatter
+                    SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
+
+                    for (HashMap.Entry<String, String> entry : course.getCourseDate().entrySet()){
+                        if (entry.getKey().equals("startDate")){
+                            try {
+                                startDate = simpleDateFormat1.parse(entry.getValue());
+                            }catch (ParseException e){
+                                e.printStackTrace();
+                            }
+                        }else if (entry.getKey().equals("endDate")){
+                            try {
+                                endDate = simpleDateFormat1.parse(entry.getValue());
+                            }catch (ParseException e){
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    if (currentTime.before(endDate)){
+                        //check if course student is not null
+                        if (course.getCourseStudent()!=null && course.getCourseStudent().size()!=0){
                             courseStudentRecyclerView.setVisibility(View.VISIBLE);
                             courseStudentNoStudentTV.setVisibility(View.INVISIBLE);
 
-                            for (HashMap.Entry<String, String> entry : courseStudent.entrySet()){
+                            //populate arraylist
+                            for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()){
                                 String studentUID = entry.getValue();
 
                                 courseStudentArrayList.add(new CourseStudent(studentUID, courseKey));
                             }
 
+                            //notify if data changed
                             courseStudentAdapter.notifyDataSetChanged();
+                        }else{
+                            courseStudentRecyclerView.setVisibility(View.INVISIBLE);
+                            courseStudentNoStudentTV.setVisibility(View.VISIBLE);
                         }
-                    }else{
-                        courseStudentRecyclerView.setVisibility(View.INVISIBLE);
-                        courseStudentNoStudentTV.setVisibility(View.VISIBLE);
+                    }else if (!currentTime.before(endDate)){
+                        courseStudentRecyclerView.setVisibility(View.VISIBLE);
+                        courseStudentNoStudentTV.setVisibility(View.INVISIBLE);
+                        courseStudentNoStudentTV.setText(getString(R.string.course_end_period));
                     }
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                toast(getString(R.string.retrieve_failed));
             }
         });
     }
 
+    //setup recyclerview
     private void setupRecyclerView(){
         courseStudentAdapter = new CourseStudentAdapter(courseStudentArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
@@ -159,27 +182,8 @@ public class StudentFragment extends Fragment {
         courseStudentRecyclerView.setAdapter(courseStudentAdapter);
     }
 
-    public static boolean checkPermission(Context context, String[] permissions){
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
-            }
-        }
-        return true;
+    //show toast
+    private void toast(String message){
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_CODE){
-            if (grantResults.length > 0){
-                courseStudentViewHolder.changeCallButton(true);
-            }else{
-                courseStudentViewHolder.changeCallButton(false);
-                Toast.makeText(getContext(), "Please agree to the permissions", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
 }

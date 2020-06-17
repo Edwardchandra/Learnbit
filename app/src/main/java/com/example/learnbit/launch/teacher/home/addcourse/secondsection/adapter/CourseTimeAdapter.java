@@ -45,7 +45,7 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
 
     @Override
     public void onBindViewHolder(@NonNull CourseTimeViewHolder holder, final int position) {
-        holder.courseTimeET.setHint("Select your course time");
+        holder.courseTimeET.setHint(context.getString(R.string.time_hint));
 
         holder.courseTimeET.addTextChangedListener(new TextWatcher() {
             @Override
@@ -67,13 +67,11 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
     }
 
     public class CourseTimeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
         private EditText courseTimeET;
         private Calendar calendar = Calendar.getInstance();
 
         public CourseTimeViewHolder(@NonNull View itemView) {
             super(itemView);
-
             courseTimeET = itemView.findViewById(R.id.addCourse_CourseTime);
             courseTimeET.setOnClickListener(this);
         }
@@ -103,10 +101,6 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
 
         public TimePickerFragment() {}
 
-        public void TimePickerFragment(TimePickerDialog.OnTimeSetListener timeSetListener) {
-            this.timeSetListener = timeSetListener;
-        }
-
         @NonNull
         @Override
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
@@ -114,9 +108,7 @@ public class CourseTimeAdapter extends RecyclerView.Adapter<CourseTimeAdapter.Co
             int hour = calendar.get(Calendar.HOUR_OF_DAY);
             int minute = calendar.get(Calendar.MINUTE);
 
-            TimePickerDialog timePicker = new TimePickerDialog(getContext(), timeSetListener, hour, minute, true);
-
-            return timePicker;
+            return new TimePickerDialog(getContext(), timeSetListener, hour, minute, true);
         }
     }
 

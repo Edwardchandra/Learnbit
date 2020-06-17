@@ -2,57 +2,50 @@ package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.revi
 
 public class CourseReview {
 
-    private int reviewImage;
-    private String reviewName;
-    private float reviewRating;
-    private String reviewDate;
-    private String reviewText;
+    private String message;
+    private float rating;
+    private String time;
+    private String user;
 
-    public CourseReview(int reviewImage, String reviewName, float reviewRating, String reviewDate, String reviewText) {
-        this.reviewImage = reviewImage;
-        this.reviewName = reviewName;
-        this.reviewRating = reviewRating;
-        this.reviewDate = reviewDate;
-        this.reviewText = reviewText;
+    public CourseReview() {
     }
 
-    public int getReviewImage() {
-        return reviewImage;
+    public CourseReview(String message, float rating, String time, String user) {
+        this.message = message;
+        this.rating = rating;
+        this.time = time;
+        this.user = user;
     }
 
-    public void setReviewImage(int reviewImage) {
-        this.reviewImage = reviewImage;
+    public String getMessage() {
+        return message;
     }
 
-    public String getReviewName() {
-        return reviewName;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public void setReviewName(String reviewName) {
-        this.reviewName = reviewName;
+    public float getRating() {
+        return rating;
     }
 
-    public float getReviewRating() {
-        return reviewRating;
+    public void setRating(float rating) {
+        this.rating = rating;
     }
 
-    public void setReviewRating(float reviewRating) {
-        this.reviewRating = reviewRating;
+    public String getTime() {
+        return time;
     }
 
-    public String getReviewDate() {
-        return reviewDate;
+    public void setTime(String time) {
+        this.time = time;
     }
 
-    public void setReviewDate(String reviewDate) {
-        this.reviewDate = reviewDate;
+    public String getUser() {
+        return user;
     }
 
-    public String getReviewText() {
-        return reviewText;
-    }
-
-    public void setReviewText(String reviewText) {
-        this.reviewText = reviewText;
+    public void setUser(String user) {
+        this.user = user;
     }
 }

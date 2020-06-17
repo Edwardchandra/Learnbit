@@ -5,8 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.profile.withdraw.model.Withdraw;
@@ -22,7 +22,6 @@ public class WithdrawDetailsActivity extends AppCompatActivity {
     private FirebaseDatabase firebaseDatabase;
 
     private String key;
-    private String userUID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,16 +55,16 @@ public class WithdrawDetailsActivity extends AppCompatActivity {
                     if (withdraw!=null){
                         switch (withdraw.getSent()) {
                             case "pending":
-                                status.setText("Pending");
+                                status.setText(getString(R.string.pending_status));
                                 break;
                             case "processing":
-                                status.setText("Processing");
+                                status.setText(getString(R.string.processing_status));
                                 break;
                             case "success":
-                                status.setText("Success");
+                                status.setText(getString(R.string.success_status));
                                 break;
                             case "failed":
-                                status.setText("Failed");
+                                status.setText(getString(R.string.failed_status));
                                 break;
                         }
 
@@ -81,7 +80,7 @@ public class WithdrawDetailsActivity extends AppCompatActivity {
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                                Toast.makeText(WithdrawDetailsActivity.this, getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
                             }
                         });
 
@@ -90,13 +89,12 @@ public class WithdrawDetailsActivity extends AppCompatActivity {
                         bankNumber.setText(String.valueOf(withdraw.getBankNumber()));
                         bankHolder.setText(withdraw.getDestinationName());
                         dateTime.setText(withdraw.getDateTime());
-                        userUID = withdraw.getUserUid();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    Toast.makeText(WithdrawDetailsActivity.this, getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
                 }
             });
         }

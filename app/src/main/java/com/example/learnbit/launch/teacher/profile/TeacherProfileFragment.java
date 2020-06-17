@@ -1,6 +1,5 @@
 package com.example.learnbit.launch.teacher.profile;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,8 +18,6 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
-import com.example.learnbit.launch.extension.RemoveSinchService;
-import com.example.learnbit.launch.extension.SinchService;
 import com.example.learnbit.launch.launch.MainActivity;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
 import com.example.learnbit.launch.model.userdata.User;
@@ -41,17 +38,12 @@ import com.google.firebase.storage.StorageReference;
 public class TeacherProfileFragment extends Fragment implements View.OnClickListener {
 
     private ImageView teacherProfileImageView;
-    private ConstraintLayout withdrawButton, editProfileButton, changePasswordButton, aboutButton, faqButton, shareButton, switchButton, signOutButton;
     private TextView teacherProfileName, teacherProfileEmail, teacherProfileBio, teacherProfileScore, teacherProfileBalance;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
-    private FirebaseDatabase firebaseDatabase;
-    private FirebaseStorage firebaseStorage;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
-
-    private RemoveSinchService removeSinchService;
 
     private User users = new User();
 
@@ -69,25 +61,28 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         teacherProfileImageView = view.findViewById(R.id.teacherProfile_ImageView);
         teacherProfileName = view.findViewById(R.id.teacherProfile_Name);
         teacherProfileEmail = view.findViewById(R.id.teacherProfile_Email);
-        withdrawButton = view.findViewById(R.id.teacherProfile_WithdrawButton);
-        editProfileButton = view.findViewById(R.id.teacherProfile_EditProfileButton);
-        changePasswordButton = view.findViewById(R.id.teacherProfile_ChangePasswordButton);
-        aboutButton = view.findViewById(R.id.teacherProfile_AboutButton);
-        faqButton = view.findViewById(R.id.teacherProfile_FAQButton);
-        shareButton = view.findViewById(R.id.teacherProfile_ShareButton);
-        switchButton = view.findViewById(R.id.teacherProfile_SwitchButton);
-        signOutButton = view.findViewById(R.id.teacherProfile_SignOutButton);
+        ConstraintLayout withdrawButton = view.findViewById(R.id.teacherProfile_WithdrawButton);
+        ConstraintLayout editProfileButton = view.findViewById(R.id.teacherProfile_EditProfileButton);
+        ConstraintLayout changePasswordButton = view.findViewById(R.id.teacherProfile_ChangePasswordButton);
+        ConstraintLayout aboutButton = view.findViewById(R.id.teacherProfile_AboutButton);
+        ConstraintLayout faqButton = view.findViewById(R.id.teacherProfile_FAQButton);
+        ConstraintLayout shareButton = view.findViewById(R.id.teacherProfile_ShareButton);
+        ConstraintLayout switchButton = view.findViewById(R.id.teacherProfile_SwitchButton);
+        ConstraintLayout signOutButton = view.findViewById(R.id.teacherProfile_SignOutButton);
         teacherProfileBio = view.findViewById(R.id.teacherProfile_Bio);
         teacherProfileScore = view.findViewById(R.id.teacherProfile_Score);
         teacherProfileBalance = view.findViewById(R.id.teacherProfile_Balance);
+
+        teacherProfileImageView.setClipToOutline(true);
 
         withdrawButton.setOnClickListener(this);
         editProfileButton.setOnClickListener(this);
         changePasswordButton.setOnClickListener(this);
         signOutButton.setOnClickListener(this);
         switchButton.setOnClickListener(this);
-
-        teacherProfileImageView.setClipToOutline(true);
+        aboutButton.setOnClickListener(this);
+        faqButton.setOnClickListener(this);
+        shareButton.setOnClickListener(this);
 
         firebaseSetup();
         retrieveDataFromFirebase();
@@ -100,16 +95,15 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
 
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("Users").child(user.getUid());
 
-        firebaseStorage = FirebaseStorage.getInstance();
+        FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference().child("Users").child(user.getUid()).child("profileimage");
     }
 
     private void retrieveDataFromFirebase(){
         databaseReference.addValueEventListener(new ValueEventListener() {
-            @SuppressLint("DefaultLocale")
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 users = dataSnapshot.getValue(User.class);
@@ -119,18 +113,18 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
 
                 if (teacher!=null){
                     if (teacher.getDescription().equals("")){
-                        teacherProfileBio.setText("This teacher has yet to leave a description.");
+                        teacherProfileBio.setText(getString(R.string.description_empty));
                     }else{
                         teacherProfileBio.setText(teacher.getDescription());
                     }
-                    teacherProfileBalance.setText("IDR " + String.valueOf(teacher.getBalance()));
-                    teacherProfileScore.setText(String.format("%.1f", teacher.getRating()));
+                    teacherProfileBalance.setText(getString(R.string.price, teacher.getBalance()));
+                    teacherProfileScore.setText(getString(R.string.rating_text, teacher.getRating()));
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getContext(), "failed to retrieve profile data", Toast.LENGTH_SHORT).show();
+                toast(getString(R.string.retrieve_failed));
             }
         });
     }
@@ -152,7 +146,7 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
             if (getActivity() != null){
                 Glide.with(getActivity()).load(uri).into(teacherProfileImageView);
             }
-        }).addOnFailureListener(e -> Toast.makeText(getContext(), "failed to retrieve image", Toast.LENGTH_SHORT).show());
+        }).addOnFailureListener(e -> toast(getString(R.string.retrieve_failed)));
     }
 
     @Override
@@ -171,7 +165,6 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
                 startActivity(changePasswordIntent);
                 break;
             case R.id.teacherProfile_SignOutButton:
-//                removeSinchService.removeSinchService();
                 firebaseAuth.signOut();
                 Intent intent = new Intent(getContext(), MainActivity.class);
                 startActivity(intent);
@@ -180,12 +173,10 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
                 shareAction();
                 break;
             case R.id.teacherProfile_SwitchButton:
-                changePreferenceData("student");
+                changePreferenceData();
                 Intent switchIntent = new Intent(getContext(), StudentMainActivity.class);
                 startActivity(switchIntent);
                 break;
-            default:
-                Toast.makeText(getContext(), "Nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -198,14 +189,18 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         startActivity(Intent.createChooser(sharingIntent, "Share via"));
     }
 
-    private void changePreferenceData(String role){
+    private void changePreferenceData(){
         if (getActivity()!=null){
             SharedPreferences preferences = getActivity().getSharedPreferences(detailPreference, Context.MODE_PRIVATE);
 
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("role", role);
+            editor.putString("role", "student");
             editor.apply();
         }
+    }
+
+    private void toast(String message){
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
 }

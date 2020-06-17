@@ -3,7 +3,6 @@ package com.example.learnbit.launch.teacher.profile.accountsettings;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,8 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -21,15 +19,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.learnbit.BuildConfig;
+import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.userdata.teacher.Teacher;
 import com.example.learnbit.launch.model.userdata.User;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -40,30 +34,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class EditProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
     private ImageView profileImageView;
     private EditText profileName, profileEmail, profileBio, profilePassword;
 
-    private String cameraFilePath;
-
-    private Intent galleryIntent;
-    private Intent cameraIntent;
-
     private FirebaseUser user;
-
     private DatabaseReference databaseReference;
     private DatabaseReference databaseReference1;
 
@@ -90,20 +72,12 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         changeProfileImageButton.setOnClickListener(this);
         saveChangesButton.setOnClickListener(this);
 
-        toolbarSetup();
+        setupToolbar();
         setupFirebaseAuth();
         setupFirebaseDatabase();
         setupFirebaseStorage();
         retrieveDataFromFirebase();
-    }
-
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_DCIM);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
-        cameraFilePath = "file://" + image.getAbsolutePath();
-        return image;
+        retrieveProfileImage();
     }
 
     @Override
@@ -111,14 +85,11 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK)
-            switch (requestCode){
-                case 0:
+            if (requestCode == 0) {
+                if (data!=null){
                     Uri selectedImage = data.getData();
                     profileImageView.setImageURI(selectedImage);
-                    break;
-                case 1:
-                    profileImageView.setImageURI(Uri.parse(cameraFilePath));
-                    break;
+                }
             }
     }
 
@@ -131,21 +102,11 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void pickFromGallery() {
-        galleryIntent = new Intent(Intent.ACTION_PICK);
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
         galleryIntent.setType("image/*");
         String[] mimeTypes = {"image/jpeg", "image/png"};
         galleryIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
         startActivityForResult(galleryIntent, 0);
-    }
-
-    private void captureFromCamera() {
-        try {
-            cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", createImageFile()));
-            startActivityForResult(cameraIntent, 1);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 
     @Override
@@ -155,21 +116,37 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 pickFromGallery();
                 break;
             case R.id.editProfile_SaveButton:
-                if (profilePassword.getText().toString().isEmpty()) {
-                    profilePassword.setError("Password shouldn't be empty");
-                }else{
-                    updateProfileData();
-                    uploadProfileImage();
-                    Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
-                    startActivity(intent);
-                }
+                checkEditText();
                 break;
-            default:
-                Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void toolbarSetup(){
+    private void checkEditText(){
+        if (profilePassword.getText().toString().isEmpty()) {
+            profilePassword.setError(getString(R.string.password_field_error));
+        }else if (profilePassword.getText().toString().length() < 7){
+            profilePassword.setError(getString(R.string.password_field_error_character));
+        }else if(profileName.getText().toString().isEmpty()){
+            profileName.setError(getString(R.string.name_field_error));
+        }else if(profileName.getText().toString().length() < 3){
+            profileName.setError(getString(R.string.name_field_error_character));
+        }else if(profileEmail.getText().toString().isEmpty()){
+            profileEmail.setError(getString(R.string.email_field_error));
+        }else if(!isValidEmail(profileEmail)){
+            profileEmail.setError(getString(R.string.email_field_error_format));
+        }else{
+            updateProfileData();
+            uploadProfileImage();
+            Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    private boolean isValidEmail(EditText editText) {
+        return !TextUtils.isEmpty(editText.getText().toString()) && android.util.Patterns.EMAIL_ADDRESS.matcher(editText.getText().toString()).matches();
+    }
+
+    private void setupToolbar(){
         if (getSupportActionBar() != null){
             setTitle("Edit Profile");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -205,15 +182,13 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 user.reauthenticate(authCredential).addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
                         user.updateEmail(profileEmail.getText().toString());
-                        Toast.makeText(getApplicationContext(), "Your profile data successfully updated", Toast.LENGTH_SHORT).show();
+                        toast(getString(R.string.upload_success));
                     }else{
-                        Toast.makeText(getApplicationContext(), "Your profile data failed to update", Toast.LENGTH_SHORT).show();
+                        toast(getString(R.string.upload_failed));
                     }
                 });
             }
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "failed to save data", Toast.LENGTH_SHORT).show();
-        });
+        }).addOnFailureListener(e -> toast(getString(R.string.upload_failed)));
     }
 
     private void retrieveDataFromFirebase(){
@@ -226,12 +201,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 Teacher teacher = dataSnapshot.child("teacher").getValue(Teacher.class);
 
                 if (teacher!=null){
-                    if (teacher.getDescription().equals("")){
-                        profileBio.setText("This teacher has yet to leave a description.");
-                    }else {
-                        profileBio.setText(teacher.getDescription());
-                    }
-
+                    profileBio.setText(teacher.getDescription());
                     rating = teacher.getRating();
                     balance = teacher.getBalance();
                 }
@@ -239,9 +209,14 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), "failed to retrieve profile data", Toast.LENGTH_SHORT).show();
+                toast(getString(R.string.retrieve_failed));
             }
         });
+    }
+
+    private void retrieveProfileImage(){
+        storageReference.getDownloadUrl().addOnSuccessListener(uri -> Glide.with(this).load(uri).into(profileImageView))
+                                        .addOnFailureListener(e -> toast(getString(R.string.retrieve_failed)));
     }
 
     private void updateUI(FirebaseUser user){
@@ -258,7 +233,12 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         byte[] data = baos.toByteArray();
 
         UploadTask uploadTask = storageReference.putBytes(data);
-        uploadTask.addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "Failed to upload profile image", Toast.LENGTH_SHORT).show())
-                .addOnSuccessListener(taskSnapshot -> Toast.makeText(getApplicationContext(), "Successfully upload profile image", Toast.LENGTH_SHORT).show());
+        uploadTask.addOnFailureListener(e -> toast(getString(R.string.upload_failed)))
+                .addOnSuccessListener(taskSnapshot -> toast(getString(R.string.upload_success)));
+    }
+
+    //show toast
+    private void toast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

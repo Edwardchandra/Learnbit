@@ -72,6 +72,8 @@
         app:layout_constraintTop_toBottomOf="@+id/textView19" />
 
     <Spinner
+        android:theme="@style/SpinnerStyle"
+        android:popupBackground="@drawable/custom_text_edit"
         android:id="@+id/addCourse.CourseTopicOneSpinner"
         android:layout_width="match_parent"
         android:layout_height="48dp"
@@ -102,6 +104,8 @@
         app:layout_constraintTop_toBottomOf="@+id/addCourse.CourseTopicOneSpinner" />
 
     <Spinner
+        android:theme="@style/SpinnerStyle"
+        android:popupBackground="@drawable/custom_text_edit"
         android:id="@+id/addCourse.CourseTopicTwoSpinner"
         android:layout_width="match_parent"
         android:layout_height="48dp"
@@ -132,6 +136,8 @@
         app:layout_constraintTop_toBottomOf="@+id/addCourse.CourseTopicTwoSpinner" />
 
     <Spinner
+        android:theme="@style/SpinnerStyle"
+        android:popupBackground="@drawable/custom_text_edit"
         android:id="@+id/addCourse.CourseTopicThreeSpinner"
         android:layout_width="match_parent"
         android:layout_height="48dp"

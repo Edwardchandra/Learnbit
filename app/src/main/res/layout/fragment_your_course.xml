@@ -49,7 +49,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="20dp"
-                android:lineSpacingExtra="2dp"
+                android:lineSpacingExtra="4dp"
                 android:text="@string/cheeseIpsum"
                 android:textColor="@android:color/black"
                 app:layout_constraintEnd_toEndOf="parent"

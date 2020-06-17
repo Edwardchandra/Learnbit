@@ -2,7 +2,6 @@ package com.example.learnbit.launch.teacher.home.addcourse.fifthsection;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -11,8 +10,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -20,7 +17,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.learnbit.BuildConfig;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.teacher.home.addcourse.fifthsection.model.Date;
@@ -31,7 +27,6 @@ import com.example.learnbit.launch.teacher.home.addcourse.secondsection.model.Ti
 import com.example.learnbit.launch.teacher.home.addcourse.thirdsection.model.Benefit;
 import com.example.learnbit.launch.teacher.home.addcourse.thirdsection.model.Curriculum;
 import com.example.learnbit.launch.teacher.home.addcourse.thirdsection.model.Requirement;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,20 +37,17 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class AddFifthSectionActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private LinearLayout addCourseImageButton;
-    private Button createCourseButton;
     private ImageView courseImageView;
 
+    private String dateTime;
+    private String timestamp;
     private String courseName, courseCategory, courseSubcategory, courseSummary, courseStartDate, courseEndDate, courseImageURL;
     private String[] courseScheduleArray;
     private ArrayList<Time> courseTimeArrayList;
@@ -64,28 +56,17 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     private ArrayList<Curriculum> courseCurriculumArrayList;
     private long coursePrice = 0;
 
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
-
     private FirebaseDatabase firebaseDatabase;
-    private DatabaseReference databaseReference;
-
     private FirebaseStorage firebaseStorage;
-    private StorageReference storageReference;
-
-    private String cameraFilePath;
-    private Intent galleryIntent, cameraIntent;
-
-    private String dateTime;
-    private String timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_fifth_section);
 
-        addCourseImageButton = findViewById(R.id.addCourse_ChangeImageButton);
-        createCourseButton = findViewById(R.id.addCourse_CreateButton);
+        LinearLayout addCourseImageButton = findViewById(R.id.addCourse_ChangeImageButton);
+        Button createCourseButton = findViewById(R.id.addCourse_CreateButton);
         courseImageView = findViewById(R.id.addCourse_ImageView);
 
         addCourseImageButton.setOnClickListener(this);
@@ -107,8 +88,6 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
                 Intent intent = new Intent(this, TeacherMainActivity.class);
                 startActivity(intent);
                 break;
-            default:
-                Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -133,7 +112,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseStorage = FirebaseStorage.getInstance();
 
@@ -141,30 +120,11 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private void pickFromGallery() {
-        galleryIntent = new Intent(Intent.ACTION_PICK);
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK);
         galleryIntent.setType("image/*");
         String[] mimeTypes = {"image/jpeg", "image/png"};
         galleryIntent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
         startActivityForResult(galleryIntent, 0);
-    }
-
-    private void captureFromCamera() {
-        try {
-            cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider", createImageFile()));
-            startActivityForResult(cameraIntent, 1);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.ENGLISH).format(new java.util.Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_DCIM);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
-        cameraFilePath = "file://" + image.getAbsolutePath();
-        return image;
     }
 
     @Override
@@ -172,14 +132,11 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == Activity.RESULT_OK)
-            switch (requestCode){
-                case 0:
+            if (requestCode == 0) {
+                if (data != null) {
                     Uri selectedImage = data.getData();
                     courseImageView.setImageURI(selectedImage);
-                    break;
-                case 1:
-                    courseImageView.setImageURI(Uri.parse(cameraFilePath));
-                    break;
+                }
             }
     }
 
@@ -207,7 +164,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
             courseTime.put(courseTimeArrayList.get(i).getTime(), false);
         }
 
-        databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).push();
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).push();
 
         databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, "pending", courseCategory, courseSubcategory, courseImageURL, dateTime, timestamp, 0));
         databaseReference.child("courseDate").setValue(new Date(courseStartDate, courseEndDate));
@@ -236,7 +193,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private void uploadCourseImage(){
-        storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child("courseImage");
+        StorageReference storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child("courseImage");
 
         Drawable imageDrawable = courseImageView.getDrawable();
 

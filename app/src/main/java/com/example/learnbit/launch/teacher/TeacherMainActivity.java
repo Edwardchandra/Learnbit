@@ -170,50 +170,73 @@ public class TeacherMainActivity extends BaseActivity implements BottomNavigatio
                         //if retrieved data is null then terminate
                         //if retrieved data is not null then proceed
                         if (course!=null){
+                            String startDateString = "", endDateString = "";
+                            Date startDate = new Date(), endDate = new Date();
+                            Date date = Calendar.getInstance().getTime();
 
-                            //get the current date time in day format(ie. Monday, Tuesday, Wednesday, etc)
-                            //date format is used to convert the original date time format into the desired format
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
-                            String today = simpleDateFormat.format(Calendar.getInstance().getTime());
-
-                            //loop through the schedule data in Course object
-                            for (HashMap.Entry<String, String> scheduleEntry : course.getCourseSchedule().entrySet()){
-
-                                //check if value of hashmap is equals to today day
-                                //if equal then proceed
-                                //if not then terminate
-                                if (scheduleEntry.getValue().equals(today)){
-
-                                    //loop through the time data in Course object
-                                    for (HashMap.Entry<String,Boolean> entry : course.getCourseTime().entrySet()) {
-
-                                        //initiate date time formatter
-                                        SimpleDateFormat hourDateFormat = new SimpleDateFormat("hh:mm aa", Locale.US);
-                                        Date currDate = null;
-
-                                        //convert course time string into date
-                                        //catch error
-                                        try {
-                                            currDate = hourDateFormat.parse(entry.getKey());
-                                        } catch (ParseException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                        //check if time is null or not
-                                        if (currDate!=null){
-
-                                            //convert date into millis
-                                            long millis = currDate.getTime();
-
-                                            //add millis value to time arraylist
-                                            timeArrayList.add(millis);
-                                        }
-                                    }
+                            for (HashMap.Entry<String, String> entry : course.getCourseDate().entrySet()){
+                                if (entry.getKey().equals("startDate")){
+                                    startDateString = entry.getValue();
+                                }else if (entry.getKey().equals("endDate")){
+                                    endDateString = entry.getValue();
                                 }
                             }
 
-                            //if looping is finished, execute start alarm method
-                            startAlarm();
+                            SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
+
+                            try {
+                                startDate = simpleDateFormat1.parse(startDateString);
+                                endDate = simpleDateFormat1.parse(endDateString);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+
+                            if (date.after(startDate) && date.before(endDate)){
+                                //get the current date time in day format(ie. Monday, Tuesday, Wednesday, etc)
+                                //date format is used to convert the original date time format into the desired format
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
+                                String today = simpleDateFormat.format(Calendar.getInstance().getTime());
+
+                                //loop through the schedule data in Course object
+                                for (HashMap.Entry<String, String> scheduleEntry : course.getCourseSchedule().entrySet()){
+
+                                    //check if value of hashmap is equals to today day
+                                    //if equal then proceed
+                                    //if not then terminate
+                                    if (scheduleEntry.getValue().equals(today)){
+
+                                        //loop through the time data in Course object
+                                        for (HashMap.Entry<String,Boolean> entry : course.getCourseTime().entrySet()) {
+                                            if (entry.getValue()){
+                                                //initiate date time formatter
+                                                SimpleDateFormat hourDateFormat = new SimpleDateFormat("hh:mm aa", Locale.US);
+                                                Date currDate = null;
+
+                                                //convert course time string into date
+                                                //catch error
+                                                try {
+                                                    currDate = hourDateFormat.parse(entry.getKey());
+                                                } catch (ParseException e) {
+                                                    e.printStackTrace();
+                                                }
+
+                                                //check if time is null or not
+                                                if (currDate!=null){
+
+                                                    //convert date into millis
+                                                    long millis = currDate.getTime();
+
+                                                    //add millis value to time arraylist
+                                                    timeArrayList.add(millis);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                //if looping is finished, execute start alarm method
+                                startAlarm();
+                            }
                         }else {
                             toast(getString(R.string.retrieve_failed));
                         }

@@ -1,7 +1,6 @@
 package com.example.learnbit.launch.teacher.home.addcourse.secondsection;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,7 +11,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -66,8 +64,6 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
     private String courseSubcategory;
     private String courseSummary;
 
-    private int weeks;
-
     DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener(){
         @Override
         public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -80,7 +76,6 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
 
     public AddSecondSectionActivity() {}
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,7 +108,6 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         getIntentData();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     private void setupToolbar(){
         setSupportActionBar(secondSectionToolbar);
 
@@ -123,8 +117,10 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        getWindow().setStatusBarColor(Color.WHITE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+            getWindow().setStatusBarColor(Color.WHITE);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
     }
 
     private void getIntentData(){
@@ -132,8 +128,6 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         courseCategory = getIntent().getStringExtra("courseCategory");
         courseSubcategory = getIntent().getStringExtra("courseSubcategory");
         courseSummary = getIntent().getStringExtra("courseSummary");
-
-        Log.d("intentdata", courseName + " " + courseCategory + " " + courseSubcategory + " " + courseSummary);
     }
 
     @Override
@@ -144,7 +138,6 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         return super.onOptionsItemSelected(item);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onClick(View v) {
         switch (v.getId()){
@@ -175,31 +168,24 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         }
 
         selectedCheckboxArray = selectedCheckbox.toArray(new String[0]);
-
-        for (String s : selectedCheckboxArray) {
-            Log.d("checkboxArray", s);
-        }
     }
 
     private void getTimeArrayList(){
         courseTimeArrayList = courseTimeAdapter.getArrayList();
-
-        for (int i=0;i<courseTimeArrayList.size();i++){
-            Log.d("courseTime", courseTimeArrayList.get(i).getTime() + " ");
-        }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private long getDateTimeMillisecond(String date){
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yy", Locale.US);
-        LocalDate localDate = LocalDate.parse(date, dateTimeFormatter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yy", Locale.US);
+            LocalDate localDate = LocalDate.parse(date, dateTimeFormatter);
 
-        return localDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+            return localDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
+        }
+        return 0;
     }
 
     private int getWeeks(long fromDate, long toDate){
         int weeks = Weeks.weeksBetween(new DateTime(fromDate), new DateTime(toDate)).getWeeks();
-
         if (weeks < 0) {
             weeks = Weeks.weeksBetween(new DateTime(toDate), new DateTime(fromDate)).getWeeks();
         }
@@ -217,20 +203,19 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         new DatePickerDialog(this, dateSetListener, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private void editTextCheck(){
         String startDate = startDateET.getText().toString();
         String endDate = endDateET.getText().toString();
-        weeks = getWeeks(getDateTimeMillisecond(startDateET.getText().toString()), getDateTimeMillisecond(endDateET.getText().toString()));
+        int weeks = getWeeks(getDateTimeMillisecond(startDateET.getText().toString()), getDateTimeMillisecond(endDateET.getText().toString()));
 
         if (startDate.isEmpty()){
-            startDateET.setError("Course start date shouldn't be empty");
+            startDateET.setError(getString(R.string.start_date_error));
         }else if (endDate.isEmpty()){
-            endDateET.setError("Course end date shouldn't be empty");
+            endDateET.setError(getString(R.string.end_date_error));
         }else if(weeks < 2){
-            Toast.makeText(this, "Your course should be equal to or more than two weeks", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.course_length_error), Toast.LENGTH_SHORT).show();
         }else if(courseTimeArrayList.size() == 0) {
-            Toast.makeText(this, "Your course should have a time schedule", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.time_schedule_error), Toast.LENGTH_SHORT).show();
         }else{
             Intent intent = new Intent(this, AddThirdSectionActivity.class);
             intent.putExtra("weekcount", weeks);
@@ -247,5 +232,4 @@ public class AddSecondSectionActivity extends AppCompatActivity implements View.
         }
 
     }
-
 }

@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentViewHolder> {
 
-    private ArrayList<Content> contentArrayList = new ArrayList<>();
+    private ArrayList<Content> contentArrayList;
     private Context context;
 
     private String courseName;
@@ -51,16 +51,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentAdapter.ContentV
         holder.contentName.setText(contentArrayList.get(position).getSectionTopicName());
         holder.contentType.setText(contentArrayList.get(position).getSectionTopicType());
 
-        holder.contentMaterialButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, SupportingFilesActivity.class);
-                intent.putExtra("courseName", courseName);
-                intent.putExtra("courseSectionTopic", contentArrayList.get(position).getSectionTopicName());
-                intent.putExtra("courseSectionPart", contentArrayList.get(position).getSectionPart());
-                intent.putExtra("courseWeek", courseWeek);
-                context.startActivity(intent);
-            }
+        holder.contentMaterialButton.setOnClickListener(v -> {
+            Intent intent = new Intent(context, SupportingFilesActivity.class);
+            intent.putExtra("courseName", courseName);
+            intent.putExtra("courseSectionTopic", contentArrayList.get(position).getSectionTopicName());
+            intent.putExtra("courseSectionPart", contentArrayList.get(position).getSectionPart());
+            intent.putExtra("courseSectionType", contentArrayList.get(position).getSectionTopicType());
+            intent.putExtra("courseWeek", courseWeek);
+            context.startActivity(intent);
         });
     }
 

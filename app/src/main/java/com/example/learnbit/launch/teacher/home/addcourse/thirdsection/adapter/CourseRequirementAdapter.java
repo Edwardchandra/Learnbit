@@ -31,12 +31,12 @@ public class CourseRequirementAdapter extends RecyclerView.Adapter<CourseRequire
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         View view = layoutInflater.inflate(R.layout.item_requirements_edittext, parent, false);
 
-        return new CourseRequirementAdapter.CourseRequirementViewHolder(view);
+        return new CourseRequirementViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CourseRequirementAdapter.CourseRequirementViewHolder holder, final int position) {
-        holder.courseRequirementET.setHint("Enter your course requirement");
+        holder.courseRequirementET.setHint(context.getString(R.string.requirement_hint));
         holder.courseRequirementET.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -56,22 +56,22 @@ public class CourseRequirementAdapter extends RecyclerView.Adapter<CourseRequire
         return (requirementArrayList == null) ? 0 : requirementArrayList.size();
     }
 
-    public class CourseRequirementViewHolder extends RecyclerView.ViewHolder{
-
+    public static class CourseRequirementViewHolder extends RecyclerView.ViewHolder{
         private EditText courseRequirementET;
 
         public CourseRequirementViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            courseRequirementET = (EditText) itemView.findViewById(R.id.addCourse_CourseRequirements);
+            courseRequirementET = itemView.findViewById(R.id.addCourse_CourseRequirements);
         }
     }
 
+    //add new edittext cell to recyclerview
     public void addEditText(Requirement requirement){
         requirementArrayList.add(requirement);
         notifyItemInserted(requirementArrayList.size() - 1);
     }
 
+    //get arraylist data
     public ArrayList<Requirement> getArrayList(){
         return requirementArrayList;
     }

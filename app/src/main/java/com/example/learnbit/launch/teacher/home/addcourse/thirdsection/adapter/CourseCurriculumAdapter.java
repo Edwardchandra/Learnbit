@@ -40,12 +40,11 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
 
     @Override
     public void onBindViewHolder(@NonNull final CourseCurriculumAdapter.CourseCurriculumViewHolder holder, final int position) {
-        holder.sectionWeek.setText("Week " + (position + 1));
+        holder.sectionWeek.setText(context.getString(R.string.week_count, (position+1)));
 
         holder.sectionNameET.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -53,8 +52,7 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
         holder.sectionTopicOne.addTextChangedListener(new TextWatcher() {
@@ -103,9 +101,7 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
         holder.sectionTopicTwoSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -115,9 +111,7 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
         holder.sectionTopicThreeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -127,33 +121,28 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
     @Override
     public int getItemCount() {
-        return (curriculumArrayList == null)? 0 : curriculumArrayList.size();
+        return (curriculumArrayList == null) ? 0 : curriculumArrayList.size();
     }
 
     class CourseCurriculumViewHolder extends RecyclerView.ViewHolder {
+
+        //elements variables
         private EditText sectionNameET;
         private TextView sectionWeek;
-
         private EditText sectionTopicOne;
         private EditText sectionTopicTwo;
         private EditText sectionTopicThree;
-
         private Spinner sectionTopicOneSpinner;
         private Spinner sectionTopicTwoSpinner;
         private Spinner sectionTopicThreeSpinner;
 
-        private ArrayAdapter<CharSequence> topicOneAdapter;
-        private ArrayAdapter<CharSequence> topicTwoAdapter;
-        private ArrayAdapter<CharSequence> topicThreeAdapter;
-
+        //constructors
         CourseCurriculumViewHolder(@NonNull final View itemView) {
             super(itemView);
 
@@ -168,23 +157,26 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             sectionTopicTwoSpinner = itemView.findViewById(R.id.addCourse_CourseTopicTwoSpinner);
             sectionTopicThreeSpinner = itemView.findViewById(R.id.addCourse_CourseTopicThreeSpinner);
 
-            setupSpinner(topicOneAdapter, sectionTopicOneSpinner);
-            setupSpinner(topicTwoAdapter, sectionTopicTwoSpinner);
-            setupSpinner(topicThreeAdapter, sectionTopicThreeSpinner);
+            setupSpinner(sectionTopicOneSpinner);
+            setupSpinner(sectionTopicTwoSpinner);
+            setupSpinner(sectionTopicThreeSpinner);
         }
 
-        private void setupSpinner(ArrayAdapter<CharSequence> arrayAdapter, Spinner spinner){
-            arrayAdapter = ArrayAdapter.createFromResource(context, R.array.course_type_array, android.R.layout.simple_spinner_item);
+        //setup spinner
+        private void setupSpinner(Spinner spinner){
+            ArrayAdapter<CharSequence> arrayAdapter = ArrayAdapter.createFromResource(context, R.array.course_type_array, android.R.layout.simple_spinner_item);
             arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(arrayAdapter);
         }
     }
 
+    //add new curriculum edittext cell to recyclerview
     public void addEditText(Curriculum curriculum){
         curriculumArrayList.add(curriculumArrayList.size(), curriculum);
         notifyItemInserted(curriculumArrayList.size() - 1);
     }
 
+    //retrieve arraylist data
     public ArrayList<Curriculum> getArrayList() {
         return curriculumArrayList;
     }

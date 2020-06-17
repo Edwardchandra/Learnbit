@@ -1,22 +1,17 @@
 package com.example.learnbit.launch.teacher.home.notification;
 
+import android.os.Bundle;
+import android.view.MenuItem;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.userdata.Notifications;
 import com.example.learnbit.launch.teacher.home.notification.adapter.NotificationsAdapter;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -30,17 +25,21 @@ import java.util.ArrayList;
 
 public class NotificationActivity extends AppCompatActivity {
 
+    //initiate element variable
     private RecyclerView notificationRecyclerView;
 
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser user;
-    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference databaseReference;
 
+    //initiate variable
     private ArrayList<Notifications> notificationsArrayList = new ArrayList<>();
-    private NotificationsAdapter notificationsAdapter;
 
+    //initiate firebase database listener
     private ValueEventListener notificationEventListener;
 
+    //initiate recyclerview adapter
+    private NotificationsAdapter notificationsAdapter;
+
+    //oncreate method execute when activity is created
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,9 +49,11 @@ public class NotificationActivity extends AppCompatActivity {
 
         setupToolbar();
         setupFirebase();
+        setupRecyclerView();
         retrieveData();
     }
 
+    //setting up custom toolbar
     private void setupToolbar(){
         if (getSupportActionBar() != null){
             getSupportActionBar().setTitle("Notifications");
@@ -61,6 +62,7 @@ public class NotificationActivity extends AppCompatActivity {
         }
     }
 
+    //settting up recyclerview adapter to populate data and layout
     private void setupRecyclerView(){
         notificationsAdapter = new NotificationsAdapter(notificationsArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -68,54 +70,65 @@ public class NotificationActivity extends AppCompatActivity {
         notificationRecyclerView.setAdapter(notificationsAdapter);
     }
 
+    //setup firebase instance and database references
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseDatabase = FirebaseDatabase.getInstance();
-
-        user = firebaseAuth.getCurrentUser();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        //initiate firebase variable
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user!=null){
+            databaseReference = firebaseDatabase.getReference("Users").child(user.getUid()).child("teacher").child("notifications");
+        }
     }
 
+    //retrieve notification data from firebase database
     private void retrieveData(){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Users").child(user.getUid()).child("teacher").child("notifications");
-        Query query = databaseReference.orderByChild("timestamp").limitToLast(10);
+        notificationsArrayList.clear();
+        notificationsAdapter.notifyDataSetChanged();
 
+        Query query = databaseReference.orderByChild("timestamp").limitToLast(10);
         notificationEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                notificationsArrayList.clear();
-
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
                     Notifications notifications = ds.getValue(Notifications.class);
-
                     if (notifications!=null){
                         notificationsArrayList.add(new Notifications(notifications.getTitle(), notifications.getBody(), notifications.getDateTime(), notifications.getTimestamp()));
                     }
                 }
 
-                setupRecyclerView();
+                //notify if data has changed
+                notificationsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                toast(getString(R.string.retrieve_failed));
             }
         };
 
         query.addValueEventListener(notificationEventListener);
     }
 
+    //remove firebase database listener
     @Override
     protected void onStop() {
         super.onStop();
 
-        firebaseDatabase.getReference("Users").child(user.getUid()).child("teacher").child("notifications").orderByChild("timestamp").limitToLast(10).removeEventListener(notificationEventListener);
+        databaseReference.orderByChild("timestamp").limitToLast(10).removeEventListener(notificationEventListener);
     }
 
+    //execute toolbar icon action
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish(); // close this activity and return to preview activity (if there is any)
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    //create toast
+    private void toast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

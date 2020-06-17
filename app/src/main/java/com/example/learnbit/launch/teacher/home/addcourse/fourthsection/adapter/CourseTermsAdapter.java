@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class CourseTermsAdapter extends RecyclerView.Adapter<CourseTermsAdapter.CourseTermsViewHolder> {
 
-    ArrayList<Terms> termsArrayList = new ArrayList<>();
+    ArrayList<Terms> termsArrayList;
 
     public CourseTermsAdapter(ArrayList<Terms> termsArrayList) {
         this.termsArrayList = termsArrayList;
@@ -40,14 +40,14 @@ public class CourseTermsAdapter extends RecyclerView.Adapter<CourseTermsAdapter.
         return termsArrayList.size();
     }
 
-    public class CourseTermsViewHolder extends RecyclerView.ViewHolder{
+    public static class CourseTermsViewHolder extends RecyclerView.ViewHolder{
 
         private TextView termsTV;
 
         public CourseTermsViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            termsTV = (TextView) itemView.findViewById(R.id.addCourse_TermsConditions);
+            termsTV = itemView.findViewById(R.id.addCourse_TermsConditions);
         }
     }
 }

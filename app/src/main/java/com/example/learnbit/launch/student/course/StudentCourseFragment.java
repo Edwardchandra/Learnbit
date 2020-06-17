@@ -90,7 +90,7 @@ public class StudentCourseFragment extends Fragment {
                     StudentCourse studentCourse = ds.getValue(StudentCourse.class);
 
                     if (studentCourse!=null){
-                        courseArrayList.add(new StudentCourse(studentCourse.getTeacherUID(), studentCourse.getCourseTime(), studentCourse.getCourseSchedule(), studentCourse.getCourseName(), studentCourse.getCourseImageURL()));
+                        courseArrayList.add(new StudentCourse(studentCourse.getTeacherUID(), studentCourse.getCourseTime(), studentCourse.getCourseSchedule(), studentCourse.getCourseName(), studentCourse.getCourseImageURL(), studentCourse.getCourseDate()));
                         courseAdapter.notifyDataSetChanged();
                     }
                 }

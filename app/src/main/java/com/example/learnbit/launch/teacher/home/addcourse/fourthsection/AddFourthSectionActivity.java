@@ -1,7 +1,6 @@
 package com.example.learnbit.launch.teacher.home.addcourse.fourthsection;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -11,7 +10,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -20,7 +18,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.learnbit.R;
-import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.teacher.home.addcourse.fifthsection.AddFifthSectionActivity;
 import com.example.learnbit.launch.teacher.home.addcourse.fourthsection.adapter.CourseTermsAdapter;
 import com.example.learnbit.launch.teacher.home.addcourse.fourthsection.model.Terms;
@@ -53,17 +50,16 @@ public class AddFourthSectionActivity extends AppCompatActivity implements View.
     private ArrayList<Requirement> courseRequirementArrayList;
     private ArrayList<Curriculum> courseCurriculumArrayList;
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_fourth_section);
 
-        termsRecyclerView = (RecyclerView) findViewById(R.id.addCourse_TermsConditionsRecyclerView);
-        Button nextButton = (Button) findViewById(R.id.addCourse_NextButton);
-        termsCheckbox = (CheckBox) findViewById(R.id.addCourse_TermsConditionsCheckbox);
-        priceET = (EditText) findViewById(R.id.addCourse_CoursePriceET);
-        fourthSectionToolbar = (Toolbar) findViewById(R.id.fourthSectionToolbar);
+        termsRecyclerView = findViewById(R.id.addCourse_TermsConditionsRecyclerView);
+        Button nextButton = findViewById(R.id.addCourse_NextButton);
+        termsCheckbox = findViewById(R.id.addCourse_TermsConditionsCheckbox);
+        priceET = findViewById(R.id.addCourse_CoursePriceET);
+        fourthSectionToolbar = findViewById(R.id.fourthSectionToolbar);
 
         setupToolbar();
         addData();
@@ -73,7 +69,6 @@ public class AddFourthSectionActivity extends AppCompatActivity implements View.
         nextButton.setOnClickListener(this);
     }
 
-   @RequiresApi(api = Build.VERSION_CODES.M)
     private void setupToolbar(){
         setSupportActionBar(fourthSectionToolbar);
 
@@ -83,8 +78,10 @@ public class AddFourthSectionActivity extends AppCompatActivity implements View.
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
-        getWindow().setStatusBarColor(Color.WHITE);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            getWindow().setStatusBarColor(Color.WHITE);
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
     }
 
     @Override
@@ -120,16 +117,14 @@ public class AddFourthSectionActivity extends AppCompatActivity implements View.
     public void onClick(View v) {
         if (v.getId() == R.id.addCourse_NextButton) {
             validate();
-        } else {
-            Toast.makeText(this, "nothing happened", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void validate(){
         if (priceET.getText().toString().isEmpty()){
-            priceET.setError("Price shouldn't be empty");
+            priceET.setError(getString(R.string.price_error));
         }else if (!termsCheckbox.isChecked()){
-            Toast.makeText(this, "Please read and agree with the terms and conditions.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.terms_error), Toast.LENGTH_SHORT).show();
         }else{
             saveData();
         }
@@ -159,5 +154,4 @@ public class AddFourthSectionActivity extends AppCompatActivity implements View.
         termsArrayList.add(new Terms("You can cancel your student’s subscription anytime but you have to give the exact and valid reason of your cancellation."));
         termsArrayList.add(new Terms("A notification will appear at the time the course is going to start. If you exceed 15 minutes after the course started then it will be counted as absent."));
     }
-
 }

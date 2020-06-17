@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.profile.withdraw.history.adapter.WithdrawHistoryAdapter;
@@ -27,14 +27,12 @@ public class WithdrawHistoryActivity extends AppCompatActivity {
 
     private RecyclerView historyRecyclerView;
 
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
 
-    private ValueEventListener withdrawEventListener;
+    private WithdrawHistoryAdapter withdrawHistoryAdapter;
 
     private ArrayList<Withdraw> withdrawArrayList = new ArrayList<>();
-    private WithdrawHistoryAdapter withdrawHistoryAdapter;
     private ArrayList<String> keyArrayList = new ArrayList<>();
 
     @Override
@@ -46,6 +44,7 @@ public class WithdrawHistoryActivity extends AppCompatActivity {
 
         setupToolbar();
         setupFirebase();
+        setupRecyclerView();
         retrieveData();
     }
 
@@ -58,30 +57,31 @@ public class WithdrawHistoryActivity extends AppCompatActivity {
     }
 
     private void setupFirebase(){
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
 
         user = firebaseAuth.getCurrentUser();
     }
 
     private void retrieveData(){
+        withdrawArrayList.clear();
+        withdrawHistoryAdapter.notifyDataSetChanged();
+
         DatabaseReference databaseReference = firebaseDatabase.getReference("Withdraw");
         Query query = databaseReference.orderByChild("userUid").equalTo(user.getUid());
 
-        withdrawEventListener = new ValueEventListener() {
+        ValueEventListener withdrawEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                withdrawArrayList.clear();
-
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String key = ds.getKey();
                     Withdraw withdraw = ds.getValue(Withdraw.class);
 
-                    if (key!=null){
+                    if (key != null) {
                         keyArrayList.add(key);
                     }
 
-                    if (withdraw!=null){
+                    if (withdraw != null) {
                         withdrawArrayList.add(new Withdraw(withdraw.getBankName(),
                                 withdraw.getBankNumber(),
                                 withdraw.getDestinationName(),
@@ -93,12 +93,12 @@ public class WithdrawHistoryActivity extends AppCompatActivity {
                     }
                 }
 
-                setupRecyclerView();
+                withdrawHistoryAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(WithdrawHistoryActivity.this, getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
             }
         };
 
