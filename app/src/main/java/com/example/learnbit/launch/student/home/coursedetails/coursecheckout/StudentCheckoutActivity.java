@@ -1,13 +1,5 @@
 package com.example.learnbit.launch.student.home.coursedetails.coursecheckout;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
@@ -17,7 +9,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -25,17 +16,20 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.extension.PaymentUtils;
 import com.example.learnbit.launch.model.coursedata.Course;
-import com.example.learnbit.launch.model.userdata.Notifications;
-import com.example.learnbit.launch.model.userdata.student.StudentCourse;
 import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.student.home.coursedetails.coursecheckout.adapter.TermsAdapter;
-import com.example.learnbit.launch.teacher.home.addcourse.fourthsection.model.Terms;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.wallet.AutoResolveHelper;
 import com.google.android.gms.wallet.IsReadyToPayRequest;
@@ -67,7 +61,8 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
     private CheckBox termsCheckBox;
     private RelativeLayout checkoutButton;
 
-    private String spinnerValue, price, courseName, key;
+    private String spinnerValue, courseKey;
+    private long teacherBalance;
 
     private ArrayList<String> timeArrayList = new ArrayList<>();
     private ArrayList<String> termsArrayList = new ArrayList<>();
@@ -75,16 +70,11 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
     private ArrayAdapter<String> arrayAdapter;
 
     private PaymentsClient paymentsClient;
-    private PaymentUtils paymentUtils;
     private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
     private FirebaseDatabase firebaseDatabase;
-    private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
 
-    private int courseCounter = 0;
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,69 +114,42 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
 
     private void setupFirebase(){
         firebaseDatabase = FirebaseDatabase.getInstance();
-        firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
         user = firebaseAuth.getCurrentUser();
     }
 
     private void retrieveData() {
-        courseName = getIntent().getStringExtra("courseName");
-        key = getIntent().getStringExtra("key");
-        price = getIntent().getStringExtra("price");
+        courseKey = getIntent().getStringExtra("courseKey");
 
-        if (key != null && courseName != null) {
-            Query query = firebaseDatabase.getReference("Course").child(key).orderByChild("courseName").equalTo(courseName);
+        if (courseKey != null) {
+            Query query = firebaseDatabase.getReference("Course").child(courseKey);
 
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        Course course = ds.getValue(Course.class);
+                    Course course = dataSnapshot.getValue(Course.class);
+                    if (course != null) {
+                        courseNameET.setText(course.getCourseName());
+                        courseCategoryET.setText(course.getCourseCategory());
+                        Glide.with(getApplicationContext()).load(course.getCourseImageURL()).into(courseImageView);
 
-                        if (course != null) {
-                            courseNameET.setText(course.getCourseName());
-
-                            courseCategoryET.setText(course.getCourseCategory());
-
-                            Glide.with(getApplicationContext()).load(course.getCourseImageURL()).into(courseImageView);
-
-                            HashMap<String, Boolean> courseTime = course.getCourseTime();
-
-                            for (String key : courseTime.keySet()){
-                                Boolean value = courseTime.get(key);
-
-                                if (value!=null){
-                                    if (!value){
-                                        timeArrayList.add(key);
-                                        arrayAdapter.notifyDataSetChanged();
-                                    }
-                                }
+                        for (HashMap.Entry<String, Boolean> courseTime : course.getCourseTime().entrySet()){
+                            if (!courseTime.getValue()){
+                                timeArrayList.add(courseTime.getKey());
                             }
                         }
+
+                        arrayAdapter.notifyDataSetChanged();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    toast(getString(R.string.retrieve_failed));
                 }
             });
         }
-
-        firebaseDatabase.getReference("Users").child(user.getUid()).child("student").child("courses").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                courseCounter = (int) dataSnapshot.getChildrenCount();
-
-                Log.d("counter", courseCounter + " ");
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     private void setupToolbar(){
@@ -200,7 +163,7 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
     }
 
     private void setupSpinner(Spinner spinner){
-        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, timeArrayList);
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, timeArrayList);
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(arrayAdapter);
         spinner.setOnItemSelectedListener(this);
@@ -215,12 +178,11 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
         return super.onOptionsItemSelected(item);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.checkout_CheckoutButton){
             if (!termsCheckBox.isChecked()){
-                Toast.makeText(this, "Please read and agree with the terms and conditions before you checkout.", Toast.LENGTH_SHORT).show();
+                toast(getString(R.string.terms_error));
             }else{
 //                requestPayment(v);
                 setData();
@@ -229,48 +191,46 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
     }
 
     private void setData(){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(key);
-        Query query = databaseReference.orderByChild("courseName").equalTo(courseName);
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(courseKey);
 
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String courseKey = "";
                 int studentCount = 0;
-                HashMap<String, String> courseSchedule = new HashMap<>();
-                HashMap<String, String> courseDate = new HashMap<>();
-                String courseImageURL = "";
+                courseKey = dataSnapshot.getKey();
+                Course course = dataSnapshot.getValue(Course.class);
 
-                for (DataSnapshot ds: dataSnapshot.getChildren()){
-                    courseKey = ds.getKey();
-                    Course course = ds.getValue(Course.class);
-
-                    if (course!=null){
-                        if (course.getCourseStudent()!=null){
-                            studentCount = course.getCourseStudent().size();
-                            Log.d("studentCount", course.getCourseStudent().size() + " ");
-                        }else{
-                            studentCount = 0;
-                        }
-
-                        courseSchedule = course.getCourseSchedule();
-                        courseImageURL = course.getCourseImageURL();
-                        courseDate = course.getCourseDate();
+                if (course!=null){
+                    if (course.getCourseStudent()!=null){
+                        studentCount = course.getCourseStudent().size();
                     }
-                }
 
-                if (courseKey!=null){
                     firebaseDatabase.getReference("Users")
                             .child(user.getUid())
                             .child("student")
                             .child("courses")
                             .child(courseKey)
-                            .setValue(new StudentCourse(key, spinnerValue, courseSchedule, courseName, courseImageURL, courseDate));
-                    firebaseDatabase.getReference("Course").child(key).child(courseKey).child("courseStudent").child("student " + (studentCount + 1)).setValue(user.getUid());
-                    firebaseDatabase.getReference("Course").child(key).child(courseKey).child("courseTime").child(spinnerValue).setValue(true);
+                            .setValue(spinnerValue);
+                    firebaseDatabase.getReference("Course").child(courseKey).child("courseStudent").child("student " + (studentCount + 1)).setValue(user.getUid());
+                    firebaseDatabase.getReference("Course").child(courseKey).child("courseTime").child(spinnerValue).setValue(true);
 
-                    Toast.makeText(StudentCheckoutActivity.this, "You have successfully applied to this course.", Toast.LENGTH_SHORT).show();
+                    firebaseDatabase.getReference("Users").child(course.getTeacherUid()).child("teacher").child("balance").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Long balance = dataSnapshot.getValue(Long.class);
+                            if (balance!=null){
+                                teacherBalance = balance + course.getCoursePrice();
+                                firebaseDatabase.getReference("Users").child(course.getTeacherUid()).child("teacher").child("balance").setValue(teacherBalance);
+                            }
+                        }
 
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            toast(getString(R.string.retrieve_failed));
+                        }
+                    });
+
+                    toast(getString(R.string.apply_success));
                     Intent intent = new Intent(getApplicationContext(), StudentMainActivity.class);
                     startActivity(intent);
                 }
@@ -278,7 +238,7 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                toast(getString(R.string.retrieve_failed));
             }
         });
     }
@@ -300,37 +260,35 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
     public void onNothingSelected(AdapterView<?> parent) {}
 
     private void addData(){
-        termsArrayList.add("You will be given 3 absent quota. If you pass the given quota, you will not be able to get the certificate of the course.");
-        termsArrayList.add("You can cancel the course anytime. By cancelling, your previous payment will not be returned and you will not get your certificate.");
-        termsArrayList.add("A notification will appear at the time the course is going to start. If you exceed 15 minutes after the course started then it will be counted as absent.");
-        termsArrayList.add("Your teacher may able to cancel your course if your teacher find you guilty.");
-        termsArrayList.add("In the last day of the course, there will be 2 quizzes. Your teacher will be able to monitor you and see if you have committ guilt or not.");
+        termsArrayList.add(getString(R.string.student_term_one));
+        termsArrayList.add(getString(R.string.student_term_two));
+        termsArrayList.add(getString(R.string.student_term_three));
+        termsArrayList.add(getString(R.string.student_term_four));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void possiblyShowGooglePayButton() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            final Optional<JSONObject> isReadyToPayJson = PaymentUtils.getIsReadyToPayRequest();
+            if (!isReadyToPayJson.isPresent()) {
+                return;
+            }
 
-        final Optional<JSONObject> isReadyToPayJson = PaymentUtils.getIsReadyToPayRequest();
-        if (!isReadyToPayJson.isPresent()) {
-            return;
+            // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
+            // OnCompleteListener to be triggered when the result of the call is known.
+            IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
+            Task<Boolean> task = paymentsClient.isReadyToPay(request);
+            task.addOnCompleteListener(this,
+                    task1 -> {
+                        if (task1.isSuccessful()) {
+                            checkoutButton.setVisibility(View.VISIBLE);
+                        } else {
+                            Log.w("isReadyToPay failed", task1.getException());
+                        }
+                    });
         }
-
-        // The call to isReadyToPay is asynchronous and returns a Task. We need to provide an
-        // OnCompleteListener to be triggered when the result of the call is known.
-        IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(isReadyToPayJson.get().toString());
-        Task<Boolean> task = paymentsClient.isReadyToPay(request);
-        task.addOnCompleteListener(this,
-                task1 -> {
-                    if (task1.isSuccessful()) {
-                        checkoutButton.setVisibility(View.VISIBLE);
-                    } else {
-                        Log.w("isReadyToPay failed", task1.getException());
-                    }
-                });
     }
 
     private void handlePaymentSuccess(PaymentData paymentData) {
-
         // Token will be null if PaymentDataRequest was not constructed using fromJson(String).
         final String paymentInfo = paymentData.toJson();
         if (paymentInfo == null) {
@@ -354,81 +312,80 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
                         .create()
                         .show();
             }
-
-            final JSONObject info = paymentMethodData.getJSONObject("info");
-            final String billingName = info.getJSONObject("billingAddress").getString("name");
-            Toast.makeText(
-                    this, billingName + " ",
-                    Toast.LENGTH_LONG).show();
-
-            // Logging token string.
-            Log.d("Google Pay token: ", token);
-
         } catch (JSONException e) {
             throw new RuntimeException("The selected garment cannot be parsed from the list of elements");
         }
     }
 
     private void handleError(int statusCode) {
-        Log.w("loadPaymentData failed", String.format("Error code: %d", statusCode));
+        toast(getString(R.string.payment_failed, statusCode));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public void requestPayment(View view) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            // Disables the button to prevent multiple clicks.
+            checkoutButton.setClickable(false);
 
-        // Disables the button to prevent multiple clicks.
-        checkoutButton.setClickable(false);
+            // The price provided to the API should include taxes and shipping.
+            // This price is not displayed to the user.
+            String price = getIntent().getStringExtra("price");
 
-        // The price provided to the API should include taxes and shipping.
-        // This price is not displayed to the user.
-        String price = getIntent().getStringExtra("price").replace("IDR ", "");
+            if (price!=null){
+                long priceValue = Long.parseLong(price.replace("IDR ", ""));
 
-        long priceValue = Long.parseLong(price);
+                Optional<JSONObject> paymentDataRequestJson = PaymentUtils.getPaymentDataRequest(priceValue);
+                if (!paymentDataRequestJson.isPresent()) {
+                    return;
+                }
 
-        Optional<JSONObject> paymentDataRequestJson = PaymentUtils.getPaymentDataRequest(priceValue);
-        if (!paymentDataRequestJson.isPresent()) {
-            return;
-        }
+                PaymentDataRequest request =
+                        PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
 
-        PaymentDataRequest request =
-                PaymentDataRequest.fromJson(paymentDataRequestJson.get().toString());
-
-        // Since loadPaymentData may show the UI asking the user to select a payment method, we use
-        // AutoResolveHelper to wait for the user interacting with it. Once completed,
-        // onActivityResult will be called with the result.
-        if (request != null) {
-            AutoResolveHelper.resolveTask(
-                    paymentsClient.loadPaymentData(request),
-                    this, LOAD_PAYMENT_DATA_REQUEST_CODE);
+                // Since loadPaymentData may show the UI asking the user to select a payment method, we use
+                // AutoResolveHelper to wait for the user interacting with it. Once completed,
+                // onActivityResult will be called with the result.
+                if (request != null) {
+                    AutoResolveHelper.resolveTask(
+                            paymentsClient.loadPaymentData(request),
+                            this, LOAD_PAYMENT_DATA_REQUEST_CODE);
+                }
+            }
         }
 
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            // value passed in AutoResolveHelper
-            case LOAD_PAYMENT_DATA_REQUEST_CODE:
-                switch (resultCode) {
-
-                    case Activity.RESULT_OK:
-                        PaymentData paymentData = PaymentData.getFromIntent(data);
+        // value passed in AutoResolveHelper
+        if (requestCode == LOAD_PAYMENT_DATA_REQUEST_CODE) {
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+                    PaymentData paymentData = PaymentData.getFromIntent(data);
+                    if (paymentData!=null){
                         handlePaymentSuccess(paymentData);
-                        setData();
-                        break;
+                    }
+                    setData();
+                    break;
 
-                    case Activity.RESULT_CANCELED:
-                        // The user cancelled the payment attempt
-                        break;
+                case Activity.RESULT_CANCELED:
+                    // The user cancelled the payment attempt
+                    break;
 
-                    case AutoResolveHelper.RESULT_ERROR:
-                        Status status = AutoResolveHelper.getStatusFromIntent(data);
+                case AutoResolveHelper.RESULT_ERROR:
+                    Status status = AutoResolveHelper.getStatusFromIntent(data);
+                    if (status!=null){
                         handleError(status.getStatusCode());
-                        break;
-                }
+                    }
+                    break;
+            }
 
-                // Re-enables the Google Pay payment button.
-                checkoutButton.setClickable(true);
+            // Re-enables the Google Pay payment button.
+            checkoutButton.setClickable(true);
         }
+    }
+
+    //show toast
+    private void toast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

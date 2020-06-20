@@ -23,8 +23,9 @@ public class Course {
     private String createTime;
     private String timestamp;
     private float courseRating;
+    private String teacherUid;
 
-    public Course(String courseName, String courseSummary, long coursePrice, String courseAcceptance, String courseCategory, String courseSubcategory, String courseImageURL, String createTime, String timestamp, float courseRating) {
+    public Course(String courseName, String courseSummary, long coursePrice, String courseAcceptance, String courseCategory, String courseSubcategory, String courseImageURL, String createTime, String timestamp, float courseRating, String teacherUid) {
         this.courseName = courseName;
         this.courseSummary = courseSummary;
         this.coursePrice = coursePrice;
@@ -35,6 +36,7 @@ public class Course {
         this.createTime = createTime;
         this.timestamp = timestamp;
         this.courseRating = courseRating;
+        this.teacherUid = teacherUid;
     }
 
     public Course(String courseName, long coursePrice, String courseImageURL, float courseRating) {
@@ -44,12 +46,22 @@ public class Course {
         this.courseRating = courseRating;
     }
 
-    public Course(String courseName, long coursePrice, String courseImageURL, HashMap<String, String> courseStudent, float courseRating) {
+    public Course(String courseName, String courseImageURL, HashMap<String, String> courseDate, HashMap<String, Boolean> courseTime, HashMap<String, String> courseSchedule, String teacherUid) {
+        this.courseName = courseName;
+        this.courseImageURL = courseImageURL;
+        this.courseDate = courseDate;
+        this.courseTime = courseTime;
+        this.courseSchedule = courseSchedule;
+        this.teacherUid = teacherUid;
+    }
+
+    public Course(String courseName, long coursePrice, String courseImageURL, HashMap<String, String> courseStudent, float courseRating, String courseCategory) {
         this.courseName = courseName;
         this.coursePrice = coursePrice;
         this.courseImageURL = courseImageURL;
         this.courseStudent = courseStudent;
         this.courseRating = courseRating;
+        this.courseCategory = courseCategory;
     }
 
     public Course(String courseName, String courseImageURL) {
@@ -67,6 +79,14 @@ public class Course {
     }
 
     public Course() {}
+
+    public Course(String courseName, String courseImageURL, HashMap<String, String> courseDate, HashMap<String, String> courseSchedule, String teacherUid) {
+        this.courseName = courseName;
+        this.courseImageURL = courseImageURL;
+        this.courseDate = courseDate;
+        this.courseSchedule = courseSchedule;
+        this.teacherUid = teacherUid;
+    }
 
     public String getCourseName() {
         return courseName;
@@ -202,5 +222,13 @@ public class Course {
 
     public void setCourseStudent(HashMap<String, String> courseStudent) {
         this.courseStudent = courseStudent;
+    }
+
+    public String getTeacherUid() {
+        return teacherUid;
+    }
+
+    public void setTeacherUid(String teacherUid) {
+        this.teacherUid = teacherUid;
     }
 }

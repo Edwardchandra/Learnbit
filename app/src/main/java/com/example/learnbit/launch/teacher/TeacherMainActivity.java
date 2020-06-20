@@ -151,7 +151,7 @@ public class TeacherMainActivity extends BaseActivity implements BottomNavigatio
             //order the query by course acceptance
             //if course acceptance is equal to ACCEPTED then retrieve
             //if not, then the data won't be retrieved
-            Query query = databaseReference.child(user.getUid()).orderByChild("courseAcceptance").equalTo("accepted");
+            Query query = databaseReference.orderByChild("courseAcceptance").equalTo("accepted");
 
             //initiate value event listener variable
             //value event listener is used to retrieve data from database
@@ -170,6 +170,7 @@ public class TeacherMainActivity extends BaseActivity implements BottomNavigatio
                         //if retrieved data is null then terminate
                         //if retrieved data is not null then proceed
                         if (course!=null){
+
                             String startDateString = "", endDateString = "";
                             Date startDate = new Date(), endDate = new Date();
                             Date date = Calendar.getInstance().getTime();

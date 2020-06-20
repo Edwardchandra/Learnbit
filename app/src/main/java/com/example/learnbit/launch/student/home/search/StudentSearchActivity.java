@@ -1,5 +1,14 @@
 package com.example.learnbit.launch.student.home.search;
 
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -7,29 +16,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.Toast;
-
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.home.search.adapter.StudentSearchAdapter;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -41,7 +34,7 @@ public class StudentSearchActivity extends AppCompatActivity {
     private RecyclerView searchRecyclerView;
 
     //initiate firebase database variable
-    private FirebaseDatabase firebaseDatabase;
+    private DatabaseReference databaseReference;
 
     //initiate variables
     private ArrayList<Course> courseArrayList = new ArrayList<>();
@@ -86,53 +79,31 @@ public class StudentSearchActivity extends AppCompatActivity {
 
     //setting up firebase instance
     private void setupFirebase() {
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference("Course");
     }
 
     //retrieve course key from firebase database
     private void retrieveKey(){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String key = "";
-
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    key = ds.getKey();
-
-                    retrieveCourseData(key);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), "Failed to load database", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void retrieveCourseData(String key){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(key);
-
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds: dataSnapshot.getChildren()){
+                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    String key = ds.getKey();
                     Course course = ds.getValue(Course.class);
-
                     if (course!=null){
-                        keyArrayList.add(key);
-                        courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating()));
-
-                        studentSearchAdapter.notifyDataSetChanged();
+                        if (course.getCourseAcceptance().equalsIgnoreCase("accepted")){
+                            keyArrayList.add(key);
+                            courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                        }
                     }
+                    studentSearchAdapter.notifyDataSetChanged();
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), "Failed to fetch database data.", Toast.LENGTH_SHORT).show();
+                toast(getString(R.string.retrieve_failed));
             }
         });
     }
@@ -165,14 +136,12 @@ public class StudentSearchActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 filter(newText);
-
                 return true;
             }
         });
@@ -183,12 +152,10 @@ public class StudentSearchActivity extends AppCompatActivity {
     private void filter(String text){
         ArrayList<Course> tempArrayList = new ArrayList<>();
         for(Course course : courseArrayList){
-
             if(course.getCourseName().toLowerCase().contains(text)){
                 tempArrayList.add(course);
             }
         }
-
         studentSearchAdapter.updateList(tempArrayList);
     }
 
@@ -198,5 +165,9 @@ public class StudentSearchActivity extends AppCompatActivity {
             finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

@@ -9,12 +9,10 @@ public class Category {
 
     private int image;
     private String name;
-    private String[] subCategoryArray;
 
-    public Category(int image, String name, String[] subCategoryArray) {
+    public Category(int image, String name) {
         this.image = image;
         this.name = name;
-        this.subCategoryArray = subCategoryArray;
     }
 
     public Category() {
@@ -34,13 +32,5 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String[] getSubCategoryArray() {
-        return subCategoryArray;
-    }
-
-    public void setSubCategoryArray(String[] subCategoryArray) {
-        this.subCategoryArray = subCategoryArray;
     }
 }

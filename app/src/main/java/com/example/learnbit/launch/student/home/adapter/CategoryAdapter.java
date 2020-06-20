@@ -8,8 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.learnbit.R;
+import com.example.learnbit.launch.student.home.category.CategoryActivity;
 import com.example.learnbit.launch.student.home.model.Category;
-import com.example.learnbit.launch.student.home.category.StudentCategoryActivity;
 
 import java.util.ArrayList;
 
@@ -39,7 +39,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         holder.image.setImageResource(categoryArrayList.get(position).getImage());
 
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(holder.itemView.getContext(), StudentCategoryActivity.class);
+            Intent intent = new Intent(holder.itemView.getContext(), CategoryActivity.class);
             intent.putExtra("categoryName", categoryArrayList.get(position).getName());
             holder.itemView.getContext().startActivity(intent);
         });

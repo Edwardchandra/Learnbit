@@ -27,12 +27,14 @@ public class SubmitAdapter extends RecyclerView.Adapter<SubmitAdapter.SubmitView
 
     //variables
     private ArrayList<Submit> submitArrayList;
+    private ArrayList<String> submitKeyArrayList;
     private String courseWeek;
     private String courseName;
     private String courseSectionPart;
 
-    public SubmitAdapter(ArrayList<Submit> submitArrayList, String courseWeek, String courseName, String courseSectionPart) {
+    public SubmitAdapter(ArrayList<Submit> submitArrayList, ArrayList<String> submitKeyArrayList, String courseWeek, String courseName, String courseSectionPart) {
         this.submitArrayList = submitArrayList;
+        this.submitKeyArrayList = submitKeyArrayList;
         this.courseWeek = courseWeek;
         this.courseName = courseName;
         this.courseSectionPart = courseSectionPart;
@@ -68,33 +70,25 @@ public class SubmitAdapter extends RecyclerView.Adapter<SubmitAdapter.SubmitView
             }
         });
 
-        //get current user
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
         //onclick cell method
         holder.itemView.setOnClickListener((v) -> {
+            //retrieve data from storage
+            FirebaseStorage.getInstance().getReference("Course")
+                    .child(courseName)
+                    .child(courseWeek)
+                    .child("topics")
+                    .child(courseSectionPart)
+                    .child("submittedFile")
+                    .child(submitArrayList.get(position).getSubmitFileName())
+                    .getDownloadUrl().addOnSuccessListener(uri -> {
 
-            //check user is not null
-            if (firebaseUser!=null){
-
-                //retrieve data from storage
-                FirebaseStorage.getInstance().getReference("Course").child(firebaseUser.getUid())
-                        .child(courseName)
-                        .child(courseWeek)
-                        .child("topics")
-                        .child(courseSectionPart)
-                        .child("submitFile")
-                        .child(submitArrayList.get(position).getSubmitFileName())
-                        .getDownloadUrl().addOnSuccessListener(uri -> {
-
-                    //display data in pdf viewer
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(uri, "application/pdf");
-                    Intent chooser = Intent.createChooser(intent, "Open");
-                    chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    holder.context.startActivity(chooser);
-                }).addOnFailureListener(e -> holder.toast(holder.context.getString(R.string.retrieve_failed)));
-            }
+                //display data in pdf viewer
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(uri, "application/pdf");
+                Intent chooser = Intent.createChooser(intent, "Open");
+                chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                holder.context.startActivity(chooser);
+            }).addOnFailureListener(e -> holder.toast(holder.context.getString(R.string.retrieve_failed)));
         });
     }
 

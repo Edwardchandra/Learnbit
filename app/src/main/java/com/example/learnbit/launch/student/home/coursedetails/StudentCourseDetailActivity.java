@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
@@ -26,7 +27,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public class StudentCourseDetailActivity extends AppCompatActivity implements Vi
 
     private Course course = new Course();
 
-    private String key, courseName;
+    private String key;
 
     private static final String detailPreference = "STUDENT_DETAIL_PREFERENCE";
 
@@ -77,50 +77,46 @@ public class StudentCourseDetailActivity extends AppCompatActivity implements Vi
     }
 
     private void retrieveData(){
-        courseName = getIntent().getStringExtra("courseName");
         key = getIntent().getStringExtra("key");
 
-        if (key!=null && courseName!=null){
-            DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
-            Query query = databaseReference.child(key).orderByChild("courseName").equalTo(courseName);
+        if (key!=null){
+            DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(key);
 
             ValueEventListener retrieveEventListener = new ValueEventListener() {
                 @RequiresApi(api = Build.VERSION_CODES.N)
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    course = dataSnapshot.getValue(Course.class);
 
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        course = ds.getValue(Course.class);
+                    if (course != null) {
+                        Glide.with(getApplicationContext()).load(course.getCourseImageURL()).into(courseDetailImageView);
 
-                        if (course != null) {
-                            Glide.with(getApplicationContext()).load(course.getCourseImageURL()).into(courseDetailImageView);
+                        courseNameET.setText(course.getCourseName());
+                        courseCategoryET.setText(getString(R.string.divider, course.getCourseCategory(), course.getCourseSubcategory()));
 
-                            courseNameET.setText(course.getCourseName());
-                            courseCategoryET.setText(getString(R.string.divider, course.getCourseCategory(), course.getCourseSubcategory()));
+                        coursePriceET.setText(getString(R.string.price, course.getCoursePrice()));
 
-                            coursePriceET.setText(getString(R.string.price, course.getCoursePrice()));
+                        int counter = 0;
 
-                            int counter = 0;
+                        for (HashMap.Entry<String, Boolean> entry : course.getCourseTime().entrySet()) {
+                            Boolean value = entry.getValue();
 
-                            for (HashMap.Entry<String, Boolean> entry : course.getCourseTime().entrySet()) {
-                                Boolean value = entry.getValue();
-
-                                if (!value) {
-                                    counter = counter + 1;
-                                }
+                            if (!value) {
+                                counter = counter + 1;
                             }
-
-                            courseQuotaET.setText(getString(R.string.schedule_availability, counter));
                         }
+
+                        courseQuotaET.setText(getString(R.string.schedule_availability, counter));
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Toast.makeText(StudentCourseDetailActivity.this, getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
                 }
             };
 
-            query.addValueEventListener(retrieveEventListener);
+            databaseReference.addValueEventListener(retrieveEventListener);
         }
 
         savePreferenceData();
@@ -129,11 +125,8 @@ public class StudentCourseDetailActivity extends AppCompatActivity implements Vi
     private void savePreferenceData(){
         if (getIntent()!=null){
             SharedPreferences preferences = getSharedPreferences(detailPreference, MODE_PRIVATE);
-            courseName = getIntent().getStringExtra("courseName");
-
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("courseName", courseName);
-            editor.putString("key", key);
+            editor.putString("courseKey", key);
             editor.apply();
         }
     }
@@ -166,8 +159,7 @@ public class StudentCourseDetailActivity extends AppCompatActivity implements Vi
     public void onClick(View v) {
         if (v.getId() == R.id.enrollButton) {
             Intent intent = new Intent(getApplicationContext(), StudentCheckoutActivity.class);
-            intent.putExtra("key", key);
-            intent.putExtra("courseName", courseName);
+            intent.putExtra("courseKey", key);
             intent.putExtra("price", coursePriceET.getText().toString());
             startActivity(intent);
         }

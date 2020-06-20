@@ -26,6 +26,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -93,7 +94,9 @@ public class TeacherSearchActivity extends AppCompatActivity {
         keyArrayList.clear();
         teacherSearchAdapter.notifyDataSetChanged();
 
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid());
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
+        Query query = databaseReference.orderByChild("teacherUid").equalTo(user.getUid());
+
         ValueEventListener courseEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -116,7 +119,7 @@ public class TeacherSearchActivity extends AppCompatActivity {
             }
         };
 
-        databaseReference.addValueEventListener(courseEventListener);
+        query.addValueEventListener(courseEventListener);
     }
 
     //create search bar inside toolbar

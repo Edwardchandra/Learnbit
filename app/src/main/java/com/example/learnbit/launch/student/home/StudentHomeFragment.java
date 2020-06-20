@@ -5,7 +5,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.learnbit.R;
@@ -34,19 +35,19 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-
 public class StudentHomeFragment extends Fragment implements View.OnClickListener {
 
     private RecyclerView categoryRecyclerView, topRatedRecyclerView;
-    private ArrayList<Category> categoryArrayList;
 
+    private ArrayList<Category> categoryArrayList;
     private ArrayList<Course> courseArrayList = new ArrayList<>();
     private ArrayList<String> keyArrayList = new ArrayList<>();
+
     private CourseCardAdapter courseCardAdapter;
+    private DatabaseReference databaseReference;
 
-    private FirebaseDatabase firebaseDatabase;
+    private TextView nameGreeting;
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -54,16 +55,17 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
 
         categoryRecyclerView = view.findViewById(R.id.categoryRecyclerView);
         topRatedRecyclerView = view.findViewById(R.id.topRatedRecyclerView);
+        nameGreeting = view.findViewById(R.id.nameGreeting);
         Button searchButton = view.findViewById(R.id.student_SearchBar);
 
         searchButton.setOnClickListener(this);
 
+        setStatusBarColor();
         setupFirebase();
+        retrieveProfileData();
         retrieveData();
         setupRecyclerView();
         addData();
-
-        setStatusBarColor();
 
         return view;
     }
@@ -84,68 +86,72 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
     }
 
     private void setupFirebase(){
-        firebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference("Course");
+    }
+
+    private void retrieveProfileData(){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (user!=null){
+            FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("name").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String name = dataSnapshot.getValue(String.class);
+                    if (name!=null){
+                        if (getActivity()!=null){
+                            nameGreeting.setText(getActivity().getString(R.string.name_greeting, name));
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    toast(getString(R.string.retrieve_failed));
+                }
+            });
+        }
     }
 
     private void retrieveData(){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String key = "";
-
-                for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    key = ds.getKey();
-
-                    retrieveCourseData(key);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getContext(), "Failed to load database", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void retrieveCourseData(String key){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(key);
         Query query = databaseReference.orderByChild("courseRating").startAt(4).endAt(5).limitToLast(5);
 
         query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds: dataSnapshot.getChildren()){
+                    String key = ds.getKey();
                     Course course = ds.getValue(Course.class);
-
                     if (course!=null){
-                        keyArrayList.add(key);
-                        courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating()));
-
-                        courseCardAdapter.notifyDataSetChanged();
+                        if (course.getCourseAcceptance().equalsIgnoreCase("accepted")){
+                            keyArrayList.add(key);
+                            courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                        }
                     }
+                    courseCardAdapter.notifyDataSetChanged();
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Toast.makeText(getContext(), "Failed to fetch database data.", Toast.LENGTH_SHORT).show();
+                toast(getString(R.string.retrieve_failed));
             }
         });
     }
 
+    //add category data
     private void addData(){
-        categoryArrayList.add(new Category(R.drawable.language, "Language & Literature", getResources().getStringArray(R.array.language_array)));
-        categoryArrayList.add(new Category(R.drawable.personal, "Personal Development", getResources().getStringArray(R.array.personal_development_array)));
-        categoryArrayList.add(new Category(R.drawable.computer, "Computer Technology", getResources().getStringArray(R.array.computer_array)));
-        categoryArrayList.add(new Category(R.drawable.math, "Mathematics & Logic", getResources().getStringArray(R.array.mathematics_array)));
-        categoryArrayList.add(new Category(R.drawable.natural, "Natural Science", getResources().getStringArray(R.array.natural_array)));
-        categoryArrayList.add(new Category(R.drawable.social, "Social \nScience", getResources().getStringArray(R.array.social_array)));
-        categoryArrayList.add(new Category(R.drawable.art, "Art & \nCulture", getResources().getStringArray(R.array.art_array)));
-        categoryArrayList.add(new Category(R.drawable.civil, "Civic Education", getResources().getStringArray(R.array.civic_array)));
+        categoryArrayList.add(new Category(R.drawable.language, "Language and Literature"));
+        categoryArrayList.add(new Category(R.drawable.personal, "Personal Development"));
+        categoryArrayList.add(new Category(R.drawable.computer, "Computer Technology"));
+        categoryArrayList.add(new Category(R.drawable.math, "Mathematics and Logic"));
+        categoryArrayList.add(new Category(R.drawable.natural, "Natural Science"));
+        categoryArrayList.add(new Category(R.drawable.social, "Social \nScience"));
+        categoryArrayList.add(new Category(R.drawable.art, "Art and \nCulture"));
+        categoryArrayList.add(new Category(R.drawable.civil, "Civic Education"));
     }
 
+    //element onclick action
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.student_SearchBar){
@@ -154,11 +160,20 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    //set status bar background and text color
     private void setStatusBarColor(){
         if (getActivity()==null) return;
 
-        getActivity().getWindow().setStatusBarColor(getResources().getColor(R.color.primaryColorDark));
-        getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (getContext()!=null){
+                getActivity().getWindow().setStatusBarColor(ContextCompat.getColor(getContext(), R.color.primaryColorDark));
+                getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            }
+        }
+    }
+
+    //show toast
+    private void toast(String message){
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 }

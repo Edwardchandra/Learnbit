@@ -1,12 +1,5 @@
 package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -24,6 +17,14 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.adapter.FilesAdapter;
@@ -32,10 +33,9 @@ import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.cours
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.File;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.Material;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.Submit;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -50,7 +50,7 @@ import java.util.ArrayList;
 public class SupportingFilesActivity extends AppCompatActivity implements View.OnClickListener {
 
     //initiate elements' variables
-    private TextView uploadingTextView, submitTextView;
+    private TextView uploadingTextView, submitTextView, materialTextView;
     private RecyclerView filesRecyclerView, materialRecyclerView, submitRecyclerView;
 
     //upload files result key
@@ -65,10 +65,11 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
     private ArrayList<File> fileArray = new ArrayList<>();
     private ArrayList<Material> materialArrayList = new ArrayList<>();
     private ArrayList<Submit> submitArrayList = new ArrayList<>();
+    private ArrayList<String> materialKeyArrayList = new ArrayList<>();
+    private ArrayList<String> submitKeyArrayList = new ArrayList<>();
     private String courseName, courseSectionTopic, courseWeek, courseSectionPart, courseKey, courseSectionType;
 
     //initiate firebase variables
-    private FirebaseUser user;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
 
@@ -81,6 +82,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_supporting_files);
 
+        materialTextView = findViewById(R.id.materialTextView);
         materialRecyclerView = findViewById(R.id.uploadedRecyclerView);
         filesRecyclerView = findViewById(R.id.filesRecyclerView);
         uploadingTextView = findViewById(R.id.uploadingTextView);
@@ -91,6 +93,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         retrieveIntentData();
         getPreferenceData();
         setupToolbar();
+        setupSubmitRecyclerView();
         setupFilesRecyclerView();
         setupMaterialRecyclerView();
         validateContent();
@@ -131,7 +134,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
 
     //setup material recyclerview
     private void setupMaterialRecyclerView(){
-        materialAdapter = new MaterialAdapter(materialArrayList, courseWeek, courseName, courseSectionPart, courseSectionTopic);
+        materialAdapter = new MaterialAdapter(materialArrayList, materialKeyArrayList, courseWeek, courseName, courseSectionPart, courseSectionTopic);
         RecyclerView.LayoutManager materialLayoutManager = new LinearLayoutManager(getApplicationContext());
         materialRecyclerView.setLayoutManager(materialLayoutManager);
         materialRecyclerView.setAdapter(materialAdapter);
@@ -157,75 +160,83 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
     }
 
     private void setupSubmitRecyclerView(){
-        submitAdapter = new SubmitAdapter(submitArrayList, courseWeek, courseName, courseSectionPart);
+        submitAdapter = new SubmitAdapter(submitArrayList, submitKeyArrayList, courseWeek, courseName, courseSectionPart);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         submitRecyclerView.setLayoutManager(layoutManager);
         submitRecyclerView.setAdapter(submitAdapter);
     }
 
     private void retrieveSubmitData(){
-        Query query = databaseReference.child(user.getUid())
+        submitArrayList.clear();
+
+        Query query = databaseReference
                 .child(courseKey)
                 .child("courseCurriculum")
                 .child(courseWeek)
                 .child("topics")
                 .child(courseSectionPart)
-                .child("sectionTopicSubmit");
+                .child("submittedFile");
 
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String key = dataSnapshot.getKey();
                 Submit submit = dataSnapshot.getValue(Submit.class);
 
                 if (submit!=null){
                     submitArrayList.add(new Submit(submit.getSubmitFileName(), submit.getSubmitFileUrl(), submit.getUserUid()));
+                    submitKeyArrayList.add(key);
                     submitAdapter.notifyItemInserted(submitArrayList.size() - 1);
 
                     if (submitArrayList.size() != 0){
                         submitTextView.setVisibility(View.VISIBLE);
                         submitRecyclerView.setVisibility(View.VISIBLE);
+                    }else{
+                        submitTextView.setVisibility(View.GONE);
+                        submitRecyclerView.setVisibility(View.GONE);
                     }
-                }
 
-                submitAdapter.notifyDataSetChanged();
+                    submitAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                submitAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
+                submitAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                submitAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(SupportingFilesActivity.this, getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     //setup firebase instance
     private void setupFirebase(){
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
 
-        user = firebaseAuth.getCurrentUser();
         databaseReference = firebaseDatabase.getReference("Course");
-        storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child(courseWeek).child("topics").child(courseSectionPart).child(courseSectionTopic);
+        storageReference = firebaseStorage.getReference("Course").child(courseName).child(courseWeek).child("topics").child(courseSectionPart).child(courseSectionTopic);
     }
 
     //retrieve material data
     private void retrieveData(){
-        Query query = databaseReference.child(user.getUid())
+        materialArrayList.clear();
+        materialKeyArrayList.clear();
+
+        Query query = databaseReference
                 .child(courseKey)
                 .child("courseCurriculum")
                 .child(courseWeek)
@@ -236,38 +247,44 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         query.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String key = dataSnapshot.getKey();
                 Material material = dataSnapshot.getValue(Material.class);
 
                 if (material!=null){
+                    materialKeyArrayList.add(key);
                     materialArrayList.add(new Material(material.getMaterialName(), material.getMaterialURL()));
                     materialAdapter.notifyItemInserted(materialArrayList.size() - 1);
 
                     if (materialArrayList.size() != 0){
                         materialRecyclerView.setVisibility(View.VISIBLE);
+                        materialTextView.setVisibility(View.VISIBLE);
+                    }else{
+                        materialRecyclerView.setVisibility(View.GONE);
+                        materialTextView.setVisibility(View.GONE);
                     }
-                }
 
-                materialAdapter.notifyDataSetChanged();
+                    materialAdapter.notifyDataSetChanged();
+                }
             }
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                materialAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
+                materialAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
+                materialAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Toast.makeText(SupportingFilesActivity.this, getString(R.string.retrieve_failed), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -312,16 +329,15 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
                                     result.addOnSuccessListener(uri -> {
                                         String topicURL = uri.toString();
                                         String topicName = fileArray.get(position).getName();
-                                        Log.d("courseURL", topicURL);
 
-                                        databaseReference.child(user.getUid())
+                                        databaseReference
                                                 .child(courseKey)
                                                 .child("courseCurriculum")
                                                 .child(courseWeek)
                                                 .child("topics")
                                                 .child(courseSectionPart)
                                                 .child("sectionTopicMaterials")
-                                                .child("material " + (materialArrayList.size() + 1))
+                                                .push()
                                                 .setValue(new Material(topicName, topicURL)).addOnSuccessListener(aVoid -> materialAdapter.notifyDataSetChanged());
                                     });
                                 }
@@ -347,14 +363,14 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
                                     String topicURL = uri.toString();
                                     String topicName = fileArray.get(fileArray.size()-1).getName();
 
-                                    databaseReference.child(user.getUid())
+                                    databaseReference
                                             .child(courseKey)
                                             .child("courseCurriculum")
                                             .child(courseWeek)
                                             .child("topics")
                                             .child(courseSectionPart)
                                             .child("sectionTopicMaterials")
-                                            .child("material " + (materialArrayList.size() + 1))
+                                            .push()
                                             .setValue(new Material(topicName, topicURL)).addOnSuccessListener(aVoid -> materialAdapter.notifyDataSetChanged());
                                 });
                             }
@@ -468,23 +484,27 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setMessage(getString(R.string.delete_file_notice));
-        builder.setPositiveButton("YES", (dialog, which) -> deleteItem(position));
+        builder.setPositiveButton("YES", (dialog, which) -> {
+            deleteItem(position);
+        });
 
-        builder.setNegativeButton("NO", (dialog, which) -> {});
+        builder.setNegativeButton("NO", (dialog, which) -> materialAdapter.notifyItemChanged(position));
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
     private void deleteItem(int position){
-        databaseReference.child(user.getUid())
+        databaseReference
                 .child(courseKey)
                 .child("courseCurriculum")
                 .child(courseWeek)
                 .child("topics")
                 .child(courseSectionPart)
-                .child("sectionTopicMaterials").child("material " + (position + 1)).removeValue();
+                .child("sectionTopicMaterials").child(materialKeyArrayList.get(position)).removeValue();
 
-        materialAdapter.notifyDataSetChanged();
+        materialKeyArrayList.remove(position);
+        materialArrayList.remove(position);
+        materialAdapter.notifyItemRemoved(position);
     }
 
     @Override

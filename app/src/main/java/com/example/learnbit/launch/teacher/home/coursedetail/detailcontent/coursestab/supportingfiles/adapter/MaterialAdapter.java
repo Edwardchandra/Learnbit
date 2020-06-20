@@ -17,6 +17,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.MaterialViewHolder> {
@@ -27,14 +28,16 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.Materi
     private String courseName;
     private String courseSectionPart;
     private String courseSectionTopic;
+    private ArrayList<String> materialKeyArrayList;
 
     //constructor
-    public MaterialAdapter(ArrayList<Material> materialArrayList, String courseWeek, String courseName, String courseSectionPart, String courseSectionTopic) {
+    public MaterialAdapter(ArrayList<Material> materialArrayList, ArrayList<String> materialKeyArrayList, String courseWeek, String courseName, String courseSectionPart, String courseSectionTopic) {
         this.materialArrayList = materialArrayList;
         this.courseName = courseName;
         this.courseWeek = courseWeek;
         this.courseSectionPart = courseSectionPart;
         this.courseSectionTopic = courseSectionTopic;
+        this.materialKeyArrayList = materialKeyArrayList;
     }
 
     //inflate with layout file
@@ -54,33 +57,26 @@ public class MaterialAdapter extends RecyclerView.Adapter<MaterialAdapter.Materi
         //set material name
         holder.materialName.setText(materialArrayList.get(position).getMaterialName());
 
-        //get current user
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-
         //onclick cell method
         holder.itemView.setOnClickListener((v) -> {
 
-            //check user is not null
-            if (firebaseUser!=null){
+            //retrieve data from storage
+            FirebaseStorage.getInstance().getReference("Course")
+                    .child(courseName)
+                    .child(courseWeek)
+                    .child("topics")
+                    .child(courseSectionPart)
+                    .child(courseSectionTopic)
+                    .child(materialArrayList.get(position).getMaterialName())
+                    .getDownloadUrl().addOnSuccessListener(uri -> {
 
-                //retrieve data from storage
-                FirebaseStorage.getInstance().getReference("Course").child(firebaseUser.getUid())
-                        .child(courseName)
-                        .child(courseWeek)
-                        .child("topics")
-                        .child(courseSectionPart)
-                        .child(courseSectionTopic)
-                        .child(materialArrayList.get(position).getMaterialName())
-                        .getDownloadUrl().addOnSuccessListener(uri -> {
-
-                            //display data in pdf viewer
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(uri, "application/pdf");
-                    Intent chooser = Intent.createChooser(intent, "Open");
-                    chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    holder.context.startActivity(chooser);
-                }).addOnFailureListener(e -> holder.toast(holder.context.getString(R.string.retrieve_failed)));
-            }
+                //display data in pdf viewer
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setDataAndType(uri, "application/pdf");
+                Intent chooser = Intent.createChooser(intent, "Open");
+                chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                holder.context.startActivity(chooser);
+            }).addOnFailureListener(e -> holder.toast(holder.context.getString(R.string.retrieve_failed)));
         });
     }
 

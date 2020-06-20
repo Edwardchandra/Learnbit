@@ -110,13 +110,11 @@ public class StudentSearchAdapter extends RecyclerView.Adapter<StudentSearchAdap
         public void onClick(View v) {
             if (studentSearchCoursePrice.getText().toString().equals(context.getString(R.string.course_applied))){
                 Intent intent = new Intent(context, MyCourseDetailActivity.class);
-                intent.putExtra("courseName", studentSearchCourseName.getText().toString());
                 intent.putExtra("key", key);
                 context.startActivity(intent);
             }else{
                 Intent intent = new Intent(context, StudentCourseDetailActivity.class);
                 intent.putExtra("key", key);
-                intent.putExtra("courseName", studentSearchCourseName.getText().toString());
                 context.startActivity(intent);
             }
         }

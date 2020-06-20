@@ -93,7 +93,7 @@ public class CourseDetailActivity extends BaseActivity {
         //get reference path to course data
         DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
         if (courseKey!=null){
-            query = databaseReference.child(user.getUid()).child(courseKey);
+            query = databaseReference.child(courseKey);
         }
     }
 

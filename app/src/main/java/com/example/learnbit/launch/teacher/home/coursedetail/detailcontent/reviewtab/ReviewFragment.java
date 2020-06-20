@@ -21,8 +21,6 @@ import android.widget.Toast;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.reviewtab.adapter.CourseReviewAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.reviewtab.model.CourseReview;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -48,7 +46,6 @@ public class ReviewFragment extends Fragment {
     private String courseKey;
 
     //initiate firebase variables
-    private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
 
     //initiate preference key to retrieve Shared Preference data
@@ -99,9 +96,6 @@ public class ReviewFragment extends Fragment {
 
     //setup firebase instance
     private void setupFirebase(){
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        user = firebaseAuth.getCurrentUser();
-
         firebaseDatabase = FirebaseDatabase.getInstance();
     }
 
@@ -113,7 +107,7 @@ public class ReviewFragment extends Fragment {
         ratingBar.setRating(0);
 
         DatabaseReference databaseReference = firebaseDatabase.getReference("Rating").child(courseKey);
-        DatabaseReference databaseReference1 = firebaseDatabase.getReference("Course").child(user.getUid()).child(courseKey).child("courseRating");
+        DatabaseReference databaseReference1 = firebaseDatabase.getReference("Course").child(courseKey).child("courseRating");
 
         //retrieve rating from course branch
         databaseReference1.addValueEventListener(new ValueEventListener() {

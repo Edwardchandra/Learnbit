@@ -1,5 +1,6 @@
 package com.example.learnbit.launch.teacher.home.addcourse.fifthsection;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -30,8 +31,11 @@ import com.example.learnbit.launch.teacher.home.addcourse.thirdsection.model.Req
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -164,9 +168,9 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
             courseTime.put(courseTimeArrayList.get(i).getTime(), false);
         }
 
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).push();
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").push();
 
-        databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, "pending", courseCategory, courseSubcategory, courseImageURL, dateTime, timestamp, 0));
+        databaseReference.setValue(new Course(courseName, courseSummary, coursePrice, "pending", courseCategory, courseSubcategory, courseImageURL, dateTime, timestamp, 0, user.getUid()));
         databaseReference.child("courseDate").setValue(new Date(courseStartDate, courseEndDate));
         databaseReference.child("courseSchedule").setValue(courseSchedule);
 
@@ -193,7 +197,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     }
 
     private void uploadCourseImage(){
-        StorageReference storageReference = firebaseStorage.getReference("Course").child(user.getUid()).child(courseName).child("courseImage");
+        StorageReference storageReference = firebaseStorage.getReference("Course").child(courseName).child("courseImage");
 
         Drawable imageDrawable = courseImageView.getDrawable();
 

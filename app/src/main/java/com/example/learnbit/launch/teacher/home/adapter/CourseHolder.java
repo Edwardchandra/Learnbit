@@ -82,18 +82,20 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
             //this formatter convert date to "HOUR:MINUTES [AM/PM]" format
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
 
-            for (HashMap.Entry<String, String> entry : course.getCourseDate().entrySet()){
-                if (entry.getKey().equals("startDate")){
-                    try {
-                        startDate = simpleDateFormat1.parse(entry.getValue());
-                    }catch (ParseException e){
-                        e.printStackTrace();
-                    }
-                }else if (entry.getKey().equals("endDate")){
-                    try {
-                        endDate = simpleDateFormat1.parse(entry.getValue());
-                    }catch (ParseException e){
-                        e.printStackTrace();
+            if (course.getCourseDate()!=null){
+                for (HashMap.Entry<String, String> entry : course.getCourseDate().entrySet()){
+                    if (entry.getKey().equals("startDate")){
+                        try {
+                            startDate = simpleDateFormat1.parse(entry.getValue());
+                        }catch (ParseException e){
+                            e.printStackTrace();
+                        }
+                    }else if (entry.getKey().equals("endDate")){
+                        try {
+                            endDate = simpleDateFormat1.parse(entry.getValue());
+                        }catch (ParseException e){
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

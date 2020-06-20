@@ -1,5 +1,6 @@
 package com.example.learnbit.launch.student.course;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -9,7 +10,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,36 +18,25 @@ import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
-import com.example.learnbit.launch.model.userdata.User;
-import com.example.learnbit.launch.model.userdata.student.StudentCourse;
 import com.example.learnbit.launch.student.course.adapter.MyCourseAdapter;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.example.learnbit.launch.student.course.search.MyCourseSearchActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 
 
-public class StudentCourseFragment extends Fragment {
+public class StudentCourseFragment extends Fragment implements View.OnClickListener {
 
     private RecyclerView myCourseRecyclerView;
-
-    private FirebaseDatabase firebaseDatabase;
     private FirebaseUser user;
-
-    private ArrayList<StudentCourse> courseArrayList = new ArrayList<>();
-
+    private ArrayList<Course> courseArrayList = new ArrayList<>();
+    private ArrayList<String> keyArrayList = new ArrayList<>();
     private MyCourseAdapter courseAdapter;
 
     @Override
@@ -58,39 +47,42 @@ public class StudentCourseFragment extends Fragment {
         Button myCourseSearchButton = view.findViewById(R.id.studentCourse_SearchBar);
         myCourseRecyclerView = view.findViewById(R.id.studentCourse_RecyclerView);
 
+        myCourseSearchButton.setOnClickListener(this);
+
         setStatusBarColor();
         setupFirebase();
-        retrieveData();
+        retrieveCourseData();
         setupRecyclerView();
 
         return view;
     }
 
     private void setupFirebase(){
-        firebaseDatabase = FirebaseDatabase.getInstance();
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         user = firebaseAuth.getCurrentUser();
     }
 
     private void setupRecyclerView(){
-        courseAdapter = new MyCourseAdapter(courseArrayList);
+        courseAdapter = new MyCourseAdapter(courseArrayList, keyArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         myCourseRecyclerView.setLayoutManager(layoutManager);
         myCourseRecyclerView.setAdapter(courseAdapter);
     }
 
-    private void retrieveData(){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Users").child(user.getUid()).child("student").child("courses");
-
-        databaseReference.addValueEventListener(new ValueEventListener() {
+    private void retrieveCourseData(){
+        FirebaseDatabase.getInstance().getReference("Course").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds :  dataSnapshot.getChildren()){
-                    String key = dataSnapshot.getKey();
-                    StudentCourse studentCourse = ds.getValue(StudentCourse.class);
-
-                    if (studentCourse!=null){
-                        courseArrayList.add(new StudentCourse(studentCourse.getTeacherUID(), studentCourse.getCourseTime(), studentCourse.getCourseSchedule(), studentCourse.getCourseName(), studentCourse.getCourseImageURL(), studentCourse.getCourseDate()));
+                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    String key = ds.getKey();
+                    Course course = ds.getValue(Course.class);
+                    if (course!=null){
+                        for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()){
+                            if (entry.getValue().equals(user.getUid())){
+                                courseArrayList.add(new Course(course.getCourseName(), course.getCourseImageURL(), course.getCourseDate(), course.getCourseSchedule(), course.getTeacherUid()));
+                                keyArrayList.add(key);
+                            }
+                        }
                         courseAdapter.notifyDataSetChanged();
                     }
                 }
@@ -98,9 +90,14 @@ public class StudentCourseFragment extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                toast(getString(R.string.retrieve_failed));
             }
         });
+    }
+
+    //show toast
+    private void toast(String message){
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     private void setStatusBarColor(){
@@ -109,6 +106,14 @@ public class StudentCourseFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             getActivity().getWindow().setStatusBarColor(Color.WHITE);
             getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.studentCourse_SearchBar){
+            Intent intent = new Intent(getContext(), MyCourseSearchActivity.class);
+            startActivity(intent);
         }
     }
 }

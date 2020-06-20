@@ -42,8 +42,6 @@ public class YourCourseFragment extends Fragment {
     //initiate preference key to retrieve shared preference data
     private static final String detailPreference = "DETAIL_PREFERENCE";
 
-    //initiate firebase variables
-    private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
 
     //initiate recyclerview section adapter
@@ -94,10 +92,7 @@ public class YourCourseFragment extends Fragment {
 
     //setup firebase instance
     private void setupFirebase(){
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
-
-        user = firebaseAuth.getCurrentUser();
     }
 
     //retrieve course data from firebase database
@@ -105,7 +100,7 @@ public class YourCourseFragment extends Fragment {
         sectionArrayList.clear();
         sectionAdapter.notifyDataSetChanged();
 
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).child(courseKey);
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(courseKey);
 
         databaseReference.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.N)

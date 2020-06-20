@@ -120,8 +120,7 @@ public class TeacherHomeFragment extends Fragment implements View.OnClickListene
     //setup firebase database branch to retrieve value
     private void retrieveDataFromFirebase(){
         DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
-        Query query = databaseReference.child(user.getUid());
-
+        Query query = databaseReference.orderByChild("teacherUid").equalTo(user.getUid());
         firebaseRecyclerOptions = new FirebaseRecyclerOptions.Builder<Course>().setQuery(query, Course.class).build();
     }
 

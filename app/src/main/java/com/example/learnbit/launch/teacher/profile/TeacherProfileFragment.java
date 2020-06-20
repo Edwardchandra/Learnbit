@@ -112,19 +112,23 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
                 Teacher teacher = dataSnapshot.child("teacher").getValue(Teacher.class);
 
                 if (teacher!=null){
-                    if (teacher.getDescription().equals("")){
-                        teacherProfileBio.setText(getString(R.string.description_empty));
-                    }else{
-                        teacherProfileBio.setText(teacher.getDescription());
+                    if (getActivity()!=null){
+                        if (teacher.getDescription().equals("")){
+                            teacherProfileBio.setText(getActivity().getString(R.string.description_empty));
+                        }else{
+                            teacherProfileBio.setText(teacher.getDescription());
+                        }
+                        teacherProfileBalance.setText(getActivity().getString(R.string.price, teacher.getBalance()));
+                        teacherProfileScore.setText(getActivity().getString(R.string.rating_text, teacher.getRating()));
                     }
-                    teacherProfileBalance.setText(getString(R.string.price, teacher.getBalance()));
-                    teacherProfileScore.setText(getString(R.string.rating_text, teacher.getRating()));
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                toast(getString(R.string.retrieve_failed));
+                if (getActivity()!=null){
+                    toast(getActivity().getString(R.string.retrieve_failed));
+                }
             }
         });
     }

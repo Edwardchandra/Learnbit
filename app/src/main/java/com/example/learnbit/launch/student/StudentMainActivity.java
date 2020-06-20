@@ -21,7 +21,7 @@ import com.example.learnbit.R;
 import com.example.learnbit.launch.extension.BaseActivity;
 import com.example.learnbit.launch.extension.ReminderBroadcast;
 import com.example.learnbit.launch.extension.RemoveSinchService;
-import com.example.learnbit.launch.model.userdata.student.StudentCourse;
+import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.course.StudentCourseFragment;
 import com.example.learnbit.launch.student.home.StudentHomeFragment;
 import com.example.learnbit.launch.student.profile.StudentProfileFragment;
@@ -30,7 +30,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -56,7 +55,7 @@ public class StudentMainActivity extends BaseActivity implements BottomNavigatio
 
     private ArrayList<Long> timeArrayList = new ArrayList<>();
 
-    private DatabaseReference databaseReference;
+    private FirebaseUser user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +65,7 @@ public class StudentMainActivity extends BaseActivity implements BottomNavigatio
         loadFragment(new StudentHomeFragment());
         setupBottomNavigationBar();
         setupFirebase();
-        retrieveData();
+        retrieveCourseData();
         createNotification();
     }
 
@@ -104,84 +103,99 @@ public class StudentMainActivity extends BaseActivity implements BottomNavigatio
 
     private void setupFirebase(){
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-
-        FirebaseUser user = firebaseAuth.getCurrentUser();
-        if (user!=null){
-            databaseReference = firebaseDatabase.getReference("Users").child(user.getUid()).child("student").child("courses");
-        }
+        user = firebaseAuth.getCurrentUser();
     }
 
-    private void retrieveData(){
-        databaseReference.addValueEventListener(new ValueEventListener() {
+    private void retrieveCourseData(){
+        FirebaseDatabase.getInstance().getReference("Course").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    StudentCourse studentCourse = ds.getValue(StudentCourse.class);
+                    Course course = ds.getValue(Course.class);
+                    if (course!=null){
+                        for (HashMap.Entry<String, String> courseStudent : course.getCourseStudent().entrySet()){
+                            if (courseStudent.getValue().equals(user.getUid())){
 
-                    if (studentCourse!=null){
+                                String startDateString = "", endDateString = "";
+                                Date startDate = new Date(), endDate = new Date();
+                                Date date = Calendar.getInstance().getTime();
 
-                        String startDateString = "", endDateString = "";
-                        Date startDate = new Date(), endDate = new Date();
-                        Date date = Calendar.getInstance().getTime();
-
-                        for (HashMap.Entry<String, String> entry : studentCourse.getCourseDate().entrySet()){
-                            if (entry.getKey().equals("startDate")){
-                                startDateString = entry.getValue();
-                            }else if (entry.getKey().equals("endDate")){
-                                endDateString = entry.getValue();
-                            }
-                        }
-
-                        SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
-
-                        try {
-                            startDate = simpleDateFormat1.parse(startDateString);
-                            endDate = simpleDateFormat1.parse(endDateString);
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-
-                        if (date.after(startDate) && date.before(endDate)){
-                            //get the current date time in day format(ie. Monday, Tuesday, Wednesday, etc)
-                            //date format is used to convert the original date time format into the desired format
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
-                            String today = simpleDateFormat.format(Calendar.getInstance().getTime());
-
-                            //loop through the schedule data in Course object
-                            for (HashMap.Entry<String, String> scheduleEntry : studentCourse.getCourseSchedule().entrySet()) {
-
-                                //check if value of hashmap is equals to today day
-                                //if equal then proceed
-                                //if not then terminate
-                                if (scheduleEntry.getValue().equals(today)) {
-                                    //initiate date time formatter
-                                    SimpleDateFormat hourDateFormat = new SimpleDateFormat("hh:mm aa", Locale.US);
-                                    Date currDate = null;
-
-                                    //convert course time string into date
-                                    //catch error
-                                    try {
-                                        currDate = hourDateFormat.parse(studentCourse.getCourseTime());
-                                    } catch (ParseException e) {
-                                        e.printStackTrace();
+                                for (HashMap.Entry<String, String> entry : course.getCourseDate().entrySet()){
+                                    if (entry.getKey().equals("startDate")){
+                                        startDateString = entry.getValue();
+                                    }else if (entry.getKey().equals("endDate")){
+                                        endDateString = entry.getValue();
                                     }
+                                }
 
-                                    //check if time is null or not
-                                    if (currDate != null) {
+                                SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("MM/dd/yy", Locale.ENGLISH);
 
-                                        //convert date into millis
-                                        long millis = currDate.getTime();
+                                try {
+                                    startDate = simpleDateFormat1.parse(startDateString);
+                                    endDate = simpleDateFormat1.parse(endDateString);
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
 
-                                        //add millis value to time arraylist
-                                        timeArrayList.add(millis);
+                                if (date.after(startDate) && date.before(endDate)){
+                                    //get the current date time in day format(ie. Monday, Tuesday, Wednesday, etc)
+                                    //date format is used to convert the original date time format into the desired format
+                                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEEE", Locale.ENGLISH);
+                                    String today = simpleDateFormat.format(Calendar.getInstance().getTime());
+
+                                    //loop through the schedule data in Course object
+                                    for (HashMap.Entry<String, String> scheduleEntry : course.getCourseSchedule().entrySet()) {
+
+                                        //check if value of hashmap is equals to today day
+                                        //if equal then proceed
+                                        //if not then terminate
+                                        if (scheduleEntry.getValue().equals(today)) {
+                                            FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("student").child("courses").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                    for (DataSnapshot ds : dataSnapshot.getChildren()){
+                                                        String courseTime = ds.getValue(String.class);
+                                                        if (courseTime!=null){
+
+                                                            //initiate date time formatter
+                                                            SimpleDateFormat hourDateFormat = new SimpleDateFormat("hh:mm aa", Locale.US);
+                                                            Date currDate = null;
+
+                                                            //convert course time string into date
+                                                            //catch error
+                                                            try {
+                                                                currDate = hourDateFormat.parse(courseTime);
+                                                            } catch (ParseException e) {
+                                                                e.printStackTrace();
+                                                            }
+
+                                                            //check if time is null or not
+                                                            if (currDate != null) {
+
+                                                                //convert date into millis
+                                                                long millis = currDate.getTime();
+
+                                                                //add millis value to time arraylist
+                                                                timeArrayList.add(millis);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    startAlarm();
+                                                }
+
+                                                @Override
+                                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                                    toast(getString(R.string.retrieve_failed));
+                                                }
+                                            });
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-                startAlarm();
             }
 
             @Override

@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -18,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.course.mycoursedetail.MyCourseDetailActivity;
+import com.example.learnbit.launch.student.home.StudentHomeFragment;
 import com.example.learnbit.launch.student.home.coursedetails.StudentCourseDetailActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -55,10 +55,12 @@ public class CourseCardAdapter extends RecyclerView.Adapter<CourseCardAdapter.Co
             for (HashMap.Entry<String, String> entry : courseStudent.entrySet()){
                 String value = entry.getValue();
 
-                if (value.equals(user.getUid())){
-                    holder.coursePrice.setText(holder.context.getString(R.string.course_applied));
-                }else{
-                    holder.coursePrice.setText(holder.context.getString(R.string.price, courseArrayList.get(position).getCoursePrice()));
+                if (user!=null){
+                    if (value.equals(user.getUid())){
+                        holder.coursePrice.setText(holder.context.getString(R.string.course_applied));
+                    }else{
+                        holder.coursePrice.setText(holder.context.getString(R.string.price, courseArrayList.get(position).getCoursePrice()));
+                    }
                 }
             }
         }else{
@@ -105,13 +107,11 @@ public class CourseCardAdapter extends RecyclerView.Adapter<CourseCardAdapter.Co
         public void onClick(View v) {
             if (coursePrice.getText().toString().equals(context.getString(R.string.course_applied))){
                 Intent intent = new Intent(context, MyCourseDetailActivity.class);
-                intent.putExtra("courseName", courseName.getText().toString());
                 intent.putExtra("key", key);
                 context.startActivity(intent);
             }else{
                 Intent intent = new Intent(context, StudentCourseDetailActivity.class);
                 intent.putExtra("key", key);
-                intent.putExtra("courseName", courseName.getText().toString());
                 context.startActivity(intent);
             }
         }

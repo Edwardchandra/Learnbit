@@ -99,7 +99,7 @@ public class StudentFragment extends Fragment {
         courseStudentAdapter.notifyDataSetChanged();
 
         //get reference path to stored data
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(user.getUid()).child(courseKey);
+        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(courseKey);
 
         //add listener to listen to data
         //value event listener always listen to data, if there's data change in firebase database, data displayed automatically change
