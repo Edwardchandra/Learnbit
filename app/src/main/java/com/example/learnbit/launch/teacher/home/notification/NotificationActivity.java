@@ -6,11 +6,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.learnbit.R;
-import com.example.learnbit.launch.model.userdata.Notifications;
+import com.example.learnbit.launch.model.userdata.Notification;
 import com.example.learnbit.launch.teacher.home.notification.adapter.NotificationsAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -31,7 +32,7 @@ public class NotificationActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
 
     //initiate variable
-    private ArrayList<Notifications> notificationsArrayList = new ArrayList<>();
+    private ArrayList<Notification> notificationsArrayList = new ArrayList<>();
 
     //initiate firebase database listener
     private ValueEventListener notificationEventListener;
@@ -68,6 +69,9 @@ public class NotificationActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         notificationRecyclerView.setLayoutManager(layoutManager);
         notificationRecyclerView.setAdapter(notificationsAdapter);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(notificationRecyclerView.getContext(), DividerItemDecoration.VERTICAL);
+        notificationRecyclerView.addItemDecoration(dividerItemDecoration);
     }
 
     //setup firebase instance and database references
@@ -77,23 +81,23 @@ public class NotificationActivity extends AppCompatActivity {
         //initiate firebase variable
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user!=null){
-            databaseReference = firebaseDatabase.getReference("Users").child(user.getUid()).child("teacher").child("notifications");
+            databaseReference = firebaseDatabase.getReference("Notification").child(user.getUid());
         }
     }
 
     //retrieve notification data from firebase database
     private void retrieveData(){
-        notificationsArrayList.clear();
-        notificationsAdapter.notifyDataSetChanged();
-
-        Query query = databaseReference.orderByChild("timestamp").limitToLast(10);
+        Query query = databaseReference.orderByChild("timestamp");
         notificationEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                notificationsArrayList.clear();
                 for (DataSnapshot ds : dataSnapshot.getChildren()){
-                    Notifications notifications = ds.getValue(Notifications.class);
-                    if (notifications!=null){
-                        notificationsArrayList.add(new Notifications(notifications.getTitle(), notifications.getBody(), notifications.getDateTime(), notifications.getTimestamp()));
+                    Notification notification = ds.getValue(Notification.class);
+                    if (notification!=null){
+                        if (notification.getRole().equalsIgnoreCase("teacher")){
+                            notificationsArrayList.add(new Notification(notification.getTitle(), notification.getMessage(), notification.getRole(), notification.getTimestamp(), notification.getDateTime()));
+                        }
                     }
                 }
 
@@ -115,7 +119,7 @@ public class NotificationActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        databaseReference.orderByChild("timestamp").limitToLast(10).removeEventListener(notificationEventListener);
+        databaseReference.orderByChild("timestamp").removeEventListener(notificationEventListener);
     }
 
     //execute toolbar icon action

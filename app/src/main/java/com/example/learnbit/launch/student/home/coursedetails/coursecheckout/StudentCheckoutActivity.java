@@ -69,6 +69,10 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
 
     private ArrayAdapter<String> arrayAdapter;
 
+    private int studentCount;
+    private long price;
+    private String teacherUid;
+
     private PaymentsClient paymentsClient;
     private static final int LOAD_PAYMENT_DATA_REQUEST_CODE = 991;
 
@@ -132,6 +136,13 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
                     if (course != null) {
                         courseNameET.setText(course.getCourseName());
                         courseCategoryET.setText(course.getCourseCategory());
+                        price = course.getCoursePrice();
+                        teacherUid = course.getTeacherUid();
+
+                        if (course.getCourseStudent()!=null){
+                            studentCount = course.getCourseStudent().size();
+                        }
+
                         Glide.with(getApplicationContext()).load(course.getCourseImageURL()).into(courseImageView);
 
                         for (HashMap.Entry<String, Boolean> courseTime : course.getCourseTime().entrySet()){
@@ -139,6 +150,21 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
                                 timeArrayList.add(courseTime.getKey());
                             }
                         }
+
+                        firebaseDatabase.getReference("Users").child(course.getTeacherUid()).child("teacher").child("balance").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                Long balance = dataSnapshot.getValue(Long.class);
+                                if (balance!=null){
+                                    teacherBalance = balance;
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                toast(getString(R.string.retrieve_failed));
+                            }
+                        });
 
                         arrayAdapter.notifyDataSetChanged();
                     }
@@ -191,56 +217,20 @@ public class StudentCheckoutActivity extends AppCompatActivity implements Adapte
     }
 
     private void setData(){
-        DatabaseReference databaseReference = firebaseDatabase.getReference("Course").child(courseKey);
+        firebaseDatabase.getReference("Users")
+                .child(user.getUid())
+                .child("student")
+                .child("courses")
+                .child(courseKey)
+                .setValue(spinnerValue);
+        firebaseDatabase.getReference("Course").child(courseKey).child("courseStudent").child("student " + (studentCount + 1)).setValue(user.getUid());
+        firebaseDatabase.getReference("Course").child(courseKey).child("courseTime").child(spinnerValue).setValue(true);
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int studentCount = 0;
-                courseKey = dataSnapshot.getKey();
-                Course course = dataSnapshot.getValue(Course.class);
+        firebaseDatabase.getReference("Users").child(teacherUid).child("teacher").child("balance").setValue(teacherBalance + price);
 
-                if (course!=null){
-                    if (course.getCourseStudent()!=null){
-                        studentCount = course.getCourseStudent().size();
-                    }
-
-                    firebaseDatabase.getReference("Users")
-                            .child(user.getUid())
-                            .child("student")
-                            .child("courses")
-                            .child(courseKey)
-                            .setValue(spinnerValue);
-                    firebaseDatabase.getReference("Course").child(courseKey).child("courseStudent").child("student " + (studentCount + 1)).setValue(user.getUid());
-                    firebaseDatabase.getReference("Course").child(courseKey).child("courseTime").child(spinnerValue).setValue(true);
-
-                    firebaseDatabase.getReference("Users").child(course.getTeacherUid()).child("teacher").child("balance").addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            Long balance = dataSnapshot.getValue(Long.class);
-                            if (balance!=null){
-                                teacherBalance = balance + course.getCoursePrice();
-                                firebaseDatabase.getReference("Users").child(course.getTeacherUid()).child("teacher").child("balance").setValue(teacherBalance);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            toast(getString(R.string.retrieve_failed));
-                        }
-                    });
-
-                    toast(getString(R.string.apply_success));
-                    Intent intent = new Intent(getApplicationContext(), StudentMainActivity.class);
-                    startActivity(intent);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                toast(getString(R.string.retrieve_failed));
-            }
-        });
+        toast(getString(R.string.apply_success));
+        Intent intent = new Intent(getApplicationContext(), StudentMainActivity.class);
+        startActivity(intent);
     }
 
     @Override

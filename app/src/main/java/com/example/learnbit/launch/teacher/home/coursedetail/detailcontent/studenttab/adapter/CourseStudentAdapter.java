@@ -76,11 +76,18 @@ public class CourseStudentAdapter extends RecyclerView.Adapter<CourseStudentAdap
         });
 
         //get student time from firebase database
-        databaseReference.child("student").child("courses").child(courseStudentArrayList.get(position).getCourseKey()).child("courseTime").addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.child("student").child("courses").child(courseStudentArrayList.get(position).getCourseKey()).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String time = dataSnapshot.getValue(String.class);
-                if (time!=null) holder.studentTime.setText(holder.context.getString(R.string.course_start_time, time));
+                if (time!=null){
+                    if (!time.equals("terminate")){
+                        holder.studentTime.setText(holder.context.getString(R.string.course_start_time, time));
+                    }else{
+                        holder.studentTime.setText(holder.context.getString(R.string.terminate_requested_student));
+                        holder.studentCallButton.setVisibility(View.INVISIBLE);
+                    }
+                }
             }
 
             @Override

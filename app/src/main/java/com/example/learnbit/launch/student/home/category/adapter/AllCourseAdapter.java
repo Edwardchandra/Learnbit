@@ -26,11 +26,9 @@ import java.util.HashMap;
 public class AllCourseAdapter extends RecyclerView.Adapter<AllCourseAdapter.AllCourseViewHolder> {
 
     private ArrayList<Course> courseArrayList;
-    private ArrayList<String> keyArrayList;
 
-    public AllCourseAdapter(ArrayList<Course> courseArrayList, ArrayList<String> keyArrayList) {
+    public AllCourseAdapter(ArrayList<Course> courseArrayList) {
         this.courseArrayList = courseArrayList;
-        this.keyArrayList = keyArrayList;
     }
 
     @NonNull
@@ -69,7 +67,7 @@ public class AllCourseAdapter extends RecyclerView.Adapter<AllCourseAdapter.AllC
         Glide.with(holder.context).load(courseArrayList.get(position).getCourseImageURL()).into(holder.allCourseImageView);
         holder.allCourseRatingBar.setRating(courseArrayList.get(position).getCourseRating());
 
-        holder.key = keyArrayList.get(position);
+        holder.key = courseArrayList.get(position).getCourseKey();
     }
 
     @Override

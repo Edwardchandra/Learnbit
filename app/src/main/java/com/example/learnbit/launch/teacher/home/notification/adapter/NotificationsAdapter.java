@@ -9,17 +9,17 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.learnbit.R;
-import com.example.learnbit.launch.model.userdata.Notifications;
+import com.example.learnbit.launch.model.userdata.Notification;
 
 import java.util.ArrayList;
 
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.NotificationViewHolder> {
 
     //initiate variable
-    private ArrayList<Notifications> notificationsArrayList;
+    private ArrayList<Notification> notificationsArrayList;
 
     //constructor
-    public NotificationsAdapter(ArrayList<Notifications> notificationsArrayList) {
+    public NotificationsAdapter(ArrayList<Notification> notificationsArrayList) {
         this.notificationsArrayList = notificationsArrayList;
     }
 
@@ -38,7 +38,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         holder.title.setText(notificationsArrayList.get(position).getTitle());
         holder.dateTime.setText(notificationsArrayList.get(position).getDateTime());
-        holder.body.setText(notificationsArrayList.get(position).getBody());
+        holder.message.setText(notificationsArrayList.get(position).getMessage());
     }
 
     //set recyclerview cell size
@@ -51,7 +51,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public static class NotificationViewHolder extends RecyclerView.ViewHolder {
 
         //initiate elements variables
-        private TextView title, dateTime, body;
+        private TextView title, dateTime, message;
 
         //constructor
         public NotificationViewHolder(@NonNull View itemView) {
@@ -59,7 +59,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
             title = itemView.findViewById(R.id.notificationTitle);
             dateTime = itemView.findViewById(R.id.notificationDateTime);
-            body = itemView.findViewById(R.id.notificationBody);
+            message = itemView.findViewById(R.id.notificationMessage);
         }
     }
 }

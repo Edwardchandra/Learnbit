@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -24,8 +27,12 @@ import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.reusableactivity.CallScreenActivity;
 import com.example.learnbit.launch.student.course.adapter.MyCourseSectionAdapter;
 import com.example.learnbit.launch.student.course.mycoursedetail.rating.RatingActivity;
+import com.example.learnbit.launch.student.course.mycoursedetail.terminate.TerminateActivity;
+import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.adapter.SectionAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -51,10 +58,12 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
     private Toolbar myCourseToolbar;
     private Button callButton;
 
+    private String courseTime;
     private String key;
     private String teacherUid;
 
     private FirebaseDatabase firebaseDatabase;
+    private FirebaseUser user;
 
     private MyCourseSectionAdapter sectionAdapter;
     private ArrayList<Section> sectionArrayList = new ArrayList<>();
@@ -92,21 +101,22 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         checkServiceEnabled();
     }
 
-    private void setupFirebase(){
+    private void setupFirebase() {
         firebaseDatabase = FirebaseDatabase.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
     }
 
-    private void setupToolbar(){
+    private void setupToolbar() {
         setSupportActionBar(myCourseToolbar);
 
-        if(getSupportActionBar()!=null){
+        if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Course Details");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
     }
 
-    private void retrieveIntentData(){
+    private void retrieveIntentData() {
         key = getIntent().getStringExtra("key");
     }
 
@@ -128,10 +138,10 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
                     Date startDate = new Date(), endDate = new Date();
                     Date date = Calendar.getInstance().getTime();
 
-                    for (HashMap.Entry<String, String> courseDate : course.getCourseDate().entrySet()){
-                        if (courseDate.getKey().equals("startDate")){
+                    for (HashMap.Entry<String, String> courseDate : course.getCourseDate().entrySet()) {
+                        if (courseDate.getKey().equals("startDate")) {
                             startDateString = courseDate.getValue();
-                        }else if (courseDate.getKey().equals("endDate")){
+                        } else if (courseDate.getKey().equals("endDate")) {
                             endDateString = courseDate.getValue();
                         }
                     }
@@ -146,55 +156,61 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
                     }
 
                     if (date.after(startDate) && date.before(endDate)) {
-                        for (HashMap.Entry<String, String> entry : course.getCourseSchedule().entrySet()){
-                            String schedule = entry.getValue();
+                        SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
 
-                            if (schedule.equals(today)){
+                        FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("student").child("courses").child(key).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                String time = dataSnapshot.getValue(String.class);
+                                if (time != null) {
+                                    courseTime = time;
+                                    if (!time.equalsIgnoreCase("terminate")) {
+                                        for (HashMap.Entry<String, String> entry : course.getCourseSchedule().entrySet()) {
+                                            String schedule = entry.getValue();
 
-                                SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
+                                            if (schedule.equals(today)) {
+                                                Date courseTime = new Date();
+                                                try {
+                                                    courseTime = simpleDateFormat2.parse(time);
+                                                } catch (ParseException e) {
+                                                    e.printStackTrace();
+                                                }
 
-                                FirebaseDatabase.getInstance().getReference("Users").child(course.getTeacherUid()).child("student").child("courses").child(key).addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                        String time = dataSnapshot.getValue(String.class);
-                                        if (time!=null){
-                                            Date courseTime = new Date();
-                                            try {
-                                                courseTime = simpleDateFormat2.parse(time);
-                                            }catch (ParseException e){
-                                                e.printStackTrace();
-                                            }
-
-                                            if (!date.after(courseTime)){
-                                                myCourseStartTime.setText(getString(R.string.course_start_time, time));
-                                            }else{
+                                                if (!date.after(courseTime)) {
+                                                    myCourseStartTime.setText(getString(R.string.course_start_time, time));
+                                                } else {
+                                                    myCourseStartTime.setText(getString(R.string.no_course));
+                                                }
+                                            } else {
                                                 myCourseStartTime.setText(getString(R.string.no_course));
                                             }
-
                                         }
+                                    } else {
+                                        myCourseStartTime.setText(getString(R.string.terminate_request));
+                                        callButton.setVisibility(View.INVISIBLE);
                                     }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                                        toast(getString(R.string.retrieve_failed));
-                                    }
-                                });
-                            }else{
-                                myCourseStartTime.setText(getString(R.string.no_course));
+                                }
                             }
-                        }
-                    }else if (date.before(startDate)){
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                toast(getString(R.string.retrieve_failed));
+                            }
+                        });
+                    } else if (date.before(startDate)) {
+                        courseTime = "notstart";
                         myCourseStartTime.setText(getString(R.string.course_start_period));
                         callButton.setVisibility(View.GONE);
-                    }else if (date.after(endDate)){
+                    } else if (date.after(endDate)) {
+                        courseTime = "hasended";
                         myCourseStartTime.setText(getString(R.string.course_end_period));
                         callButton.setText(getString(R.string.call_button_rating));
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             callButton.setBackgroundColor(getColor(R.color.orangeColor));
                         }
                     }
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         for (HashMap.Entry<String, Section> entry : course.getCourseCurriculum().entrySet()) {
                             sectionArrayList.add(new Section(entry.getKey(), entry.getValue().getName(), entry.getValue().getTopics()));
                             sectionArrayList.sort(Comparator.comparing(Section::getWeek));
@@ -210,7 +226,7 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             String name = dataSnapshot.getValue(String.class);
-                            if (name!=null){
+                            if (name != null) {
                                 teacherName.setText(name);
                             }
                         }
@@ -225,7 +241,7 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             Float rating = dataSnapshot.getValue(Float.class);
-                            if (rating!=null){
+                            if (rating != null) {
                                 teacherRatings.setText(getString(R.string.teacher_rating, rating));
                             }
                         }
@@ -264,7 +280,7 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         });
     }
 
-    private void setupRecyclerView(){
+    private void setupRecyclerView() {
         sectionAdapter = new MyCourseSectionAdapter(sectionArrayList);
         RecyclerView.LayoutManager sectionLayoutManager = new LinearLayoutManager(this);
         sectionRecyclerView.setLayoutManager(sectionLayoutManager);
@@ -274,12 +290,12 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.callButton){
-            if (!callButton.getText().toString().equals(getString(R.string.call_button_rating))){
+        if (v.getId() == R.id.callButton) {
+            if (callButton.getText().toString().equals(getString(R.string.call_button_rating))) {
                 Intent intent = new Intent(this, RatingActivity.class);
                 intent.putExtra("courseKey", key);
                 startActivity(intent);
-            }else{
+            } else {
                 callAction();
             }
         }
@@ -293,18 +309,18 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         checkServiceEnabled();
     }
 
-    private void checkServiceEnabled(){
-        if (!callButton.isEnabled()){
+    private void checkServiceEnabled() {
+        if (!callButton.isEnabled()) {
             callButton.setClickable(false);
             callButton.setBackground(getResources().getDrawable(R.drawable.call_button_disabled));
-        }else{
+        } else {
             callButton.setClickable(true);
             callButton.setBackground(getResources().getDrawable(R.drawable.call_button));
         }
     }
 
-    private void callAction(){
-        if (teacherUid!=null){
+    private void callAction() {
+        if (teacherUid != null) {
             Call call = getSinchServiceInterface().callUserVideo(teacherUid);
             String callID = call.getCallId();
             Intent callScreen = new Intent(this, CallScreenActivity.class);
@@ -314,23 +330,46 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
     }
 
     //show toast
-    private void toast(String message){
+    private void toast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    private void savePreferenceData(){
+    private void savePreferenceData() {
         SharedPreferences preferences = getSharedPreferences(detailPreference, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("courseKey", key);
         editor.apply();
     }
 
+    //inflate right dot menu to toolbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.student_course_detail_menu, menu);
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            case R.id.terminate_menu:
+                if (courseTime.equalsIgnoreCase("hasended")){
+                    toast(getString(R.string.course_end_period));
+                }else if (courseTime.equalsIgnoreCase("terminate")){
+                    toast(getString(R.string.terminate_requested));
+                } else{
+                    Intent intent = new Intent(this, TerminateActivity.class);
+                    intent.putExtra("courseKey", key);
+                    intent.putExtra("courseTime", courseTime);
+                    startActivity(intent);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
+
 }

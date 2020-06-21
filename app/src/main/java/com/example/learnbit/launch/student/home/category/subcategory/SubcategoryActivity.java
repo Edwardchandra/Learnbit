@@ -29,7 +29,6 @@ public class SubcategoryActivity extends AppCompatActivity implements View.OnCli
     private RecyclerView subcategoryRecyclerView;
     private AllCourseAdapter allCourseAdapter;
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
     private String subcategoryName;
 
     @Override
@@ -51,7 +50,7 @@ public class SubcategoryActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void setupRecyclerView(){
-        allCourseAdapter = new AllCourseAdapter(courseArrayList, keyArrayList);
+        allCourseAdapter = new AllCourseAdapter(courseArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         subcategoryRecyclerView.setLayoutManager(layoutManager);
         subcategoryRecyclerView.setAdapter(allCourseAdapter);
@@ -70,8 +69,9 @@ public class SubcategoryActivity extends AppCompatActivity implements View.OnCli
                     Course course = ds.getValue(Course.class);
                     if (course!=null){
                         if (course.getCourseAcceptance().equalsIgnoreCase("accepted")){
-                            courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
-                            keyArrayList.add(key);
+                            if (course.getCourseTime().containsValue(false)){
+                                courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                            }
                         }
                     }
                     allCourseAdapter.notifyDataSetChanged();

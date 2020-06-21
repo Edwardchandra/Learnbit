@@ -49,6 +49,7 @@
             android:textSize="14sp" />
 
         <RatingBar
+            android:progressBackgroundTint="@color/darkGray"
             android:id="@+id/studentSearchRatingBar"
             style="@style/Widget.AppCompat.RatingBar.Small"
             android:layout_width="wrap_content"

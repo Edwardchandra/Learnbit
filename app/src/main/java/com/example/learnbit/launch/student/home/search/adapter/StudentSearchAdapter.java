@@ -26,11 +26,9 @@ import java.util.HashMap;
 public class StudentSearchAdapter extends RecyclerView.Adapter<StudentSearchAdapter.StudentSearchViewHolder> {
 
     private ArrayList<Course> courseArrayList;
-    private ArrayList<String> keyArrayList;
 
-    public StudentSearchAdapter(ArrayList<Course> courseArrayList, ArrayList<String> keyArrayList) {
+    public StudentSearchAdapter(ArrayList<Course> courseArrayList) {
         this.courseArrayList = courseArrayList;
-        this.keyArrayList = keyArrayList;
     }
 
     @NonNull
@@ -69,12 +67,12 @@ public class StudentSearchAdapter extends RecyclerView.Adapter<StudentSearchAdap
         Glide.with(holder.context).load(courseArrayList.get(position).getCourseImageURL()).into(holder.studentSearchImageView);
         holder.studentSearchRatingBar.setRating(courseArrayList.get(position).getCourseRating());
 
-        holder.key = keyArrayList.get(position);
+        holder.key = courseArrayList.get(position).getCourseKey();
     }
 
     @Override
     public int getItemCount() {
-        return (courseArrayList == null || keyArrayList == null) ? 0 : courseArrayList.size();
+        return (courseArrayList == null) ? 0 : courseArrayList.size();
     }
 
     public void updateList(ArrayList<Course> courseArrayList){

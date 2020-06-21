@@ -46,7 +46,6 @@ public class TeacherSearchActivity extends AppCompatActivity {
 
     //initiate variables
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
 
     //execute when activity created
     @Override
@@ -76,7 +75,7 @@ public class TeacherSearchActivity extends AppCompatActivity {
 
     //setting up recyclerview to display retrieved firebase database data
     private void setupRecyclerView() {
-        teacherSearchAdapter = new TeacherSearchAdapter(courseArrayList, keyArrayList);
+        teacherSearchAdapter = new TeacherSearchAdapter(courseArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         searchRecyclerView.setLayoutManager(layoutManager);
         searchRecyclerView.setAdapter(teacherSearchAdapter);
@@ -91,7 +90,6 @@ public class TeacherSearchActivity extends AppCompatActivity {
     //retrieve course data from firebase database
     private void retrieveData(){
         courseArrayList.clear();
-        keyArrayList.clear();
         teacherSearchAdapter.notifyDataSetChanged();
 
         DatabaseReference databaseReference = firebaseDatabase.getReference("Course");
@@ -105,8 +103,7 @@ public class TeacherSearchActivity extends AppCompatActivity {
                     Course course = ds.getValue(Course.class);
 
                     if (course!=null && courseKey!=null){
-                        keyArrayList.add(courseKey);
-                        courseArrayList.add(new Course(course.getCourseName(), course.getCourseAcceptance(), course.getCourseImageURL(), course.getCourseTime(), course.getCourseStudent(), course.getCourseDate()));
+                        courseArrayList.add(new Course(courseKey, course.getCourseName(), course.getCourseAcceptance(), course.getCourseImageURL(), course.getCourseTime(), course.getCourseStudent(), course.getCourseDate()));
                     }
                 }
 

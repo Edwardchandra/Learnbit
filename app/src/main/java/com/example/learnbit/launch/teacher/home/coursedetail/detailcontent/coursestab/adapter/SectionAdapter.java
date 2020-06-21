@@ -46,12 +46,14 @@ public class SectionAdapter extends RecyclerView.Adapter<SectionAdapter.SectionV
     public void onBindViewHolder(@NonNull SectionViewHolder holder, int position) {
         holder.sectionName.setText(holder.context.getString(R.string.divider, sectionArrayList.get(position).getWeek(), sectionArrayList.get(position).getName()));
 
-        for (HashMap.Entry<String, Content> entry : sectionArrayList.get(position).getTopics().entrySet()){
-            String key = entry.getKey();
-            Content value = entry.getValue();
+        if (sectionArrayList.get(position).getTopics()!=null){
+            for (HashMap.Entry<String, Content> entry : sectionArrayList.get(position).getTopics().entrySet()){
+                String key = entry.getKey();
+                Content value = entry.getValue();
 
-            holder.contentArrayList.add(new Content(key, value.getSectionTopicName(), value.getSectionTopicType()));
-            holder.contentArrayList.sort(Comparator.comparing(Content::getSectionPart));
+                holder.contentArrayList.add(new Content(key, value.getSectionTopicName(), value.getSectionTopicType()));
+                holder.contentArrayList.sort(Comparator.comparing(Content::getSectionPart));
+            }
         }
 
         holder.setupRecyclerView(sectionArrayList.get(position).getWeek());

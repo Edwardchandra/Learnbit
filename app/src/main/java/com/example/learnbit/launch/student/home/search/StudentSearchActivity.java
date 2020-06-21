@@ -38,7 +38,6 @@ public class StudentSearchActivity extends AppCompatActivity {
 
     //initiate variables
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
 
     //initiate adapter class variable
     private StudentSearchAdapter studentSearchAdapter;
@@ -71,7 +70,7 @@ public class StudentSearchActivity extends AppCompatActivity {
 
     //setting up recyclerview to display retrieved firebae database data
     private void setupRecyclerView() {
-        studentSearchAdapter = new StudentSearchAdapter(courseArrayList, keyArrayList);
+        studentSearchAdapter = new StudentSearchAdapter(courseArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         searchRecyclerView.setLayoutManager(layoutManager);
         searchRecyclerView.setAdapter(studentSearchAdapter);
@@ -85,6 +84,8 @@ public class StudentSearchActivity extends AppCompatActivity {
 
     //retrieve course key from firebase database
     private void retrieveKey(){
+        courseArrayList.clear();
+
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -93,8 +94,9 @@ public class StudentSearchActivity extends AppCompatActivity {
                     Course course = ds.getValue(Course.class);
                     if (course!=null){
                         if (course.getCourseAcceptance().equalsIgnoreCase("accepted")){
-                            keyArrayList.add(key);
-                            courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                            if (course.getCourseTime().containsValue(false)){
+                                courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                            }
                         }
                     }
                     studentSearchAdapter.notifyDataSetChanged();

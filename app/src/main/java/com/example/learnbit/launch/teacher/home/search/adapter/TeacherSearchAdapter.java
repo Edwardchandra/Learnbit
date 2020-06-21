@@ -29,15 +29,13 @@ public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdap
 
     //initiate variables
     private ArrayList<Course> courseArrayList;
-    private ArrayList<String> keyArrayList;
 
     //initiate preference key variable
     private static final String detailPreference = "DETAIL_PREFERENCE";
 
     //constructor
-    public TeacherSearchAdapter(ArrayList<Course> courseArrayList, ArrayList<String> keyArrayList) {
+    public TeacherSearchAdapter(ArrayList<Course> courseArrayList) {
         this.courseArrayList = courseArrayList;
-        this.keyArrayList = keyArrayList;
     }
 
     //inflate each recycler view cell with layout
@@ -144,12 +142,12 @@ public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdap
         holder.itemView.setOnClickListener(v -> {
             SharedPreferences preferences = holder.context.getSharedPreferences(detailPreference, MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("courseKey", keyArrayList.get(position));
+            editor.putString("courseKey", courseArrayList.get(position).getCourseKey());
             editor.apply();
 
             Intent intent = new Intent(holder.context, CourseDetailActivity.class);
             intent.putExtra("courseName", courseArrayList.get(position).getCourseName());
-            intent.putExtra("key", keyArrayList.get(position));
+            intent.putExtra("key", courseArrayList.get(position).getCourseKey());
             holder.context.startActivity(intent);
         });
     }
@@ -160,7 +158,7 @@ public class TeacherSearchAdapter extends RecyclerView.Adapter<TeacherSearchAdap
     //if not return arraylists size
     @Override
     public int getItemCount() {
-        return (courseArrayList == null || keyArrayList == null) ? 0 : courseArrayList.size();
+        return (courseArrayList == null) ? 0 : courseArrayList.size();
     }
 
     //update arraylist on search bar text update

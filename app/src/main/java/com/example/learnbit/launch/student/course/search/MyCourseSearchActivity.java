@@ -42,7 +42,6 @@ public class MyCourseSearchActivity extends AppCompatActivity {
 
     //initiate variables
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
 
     //initiate adapter class variable
     private StudentSearchAdapter studentSearchAdapter;
@@ -74,7 +73,7 @@ public class MyCourseSearchActivity extends AppCompatActivity {
 
     //setting up recyclerview to display retrieved firebae database data
     private void setupRecyclerView() {
-        studentSearchAdapter = new StudentSearchAdapter(courseArrayList, keyArrayList);
+        studentSearchAdapter = new StudentSearchAdapter(courseArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         searchRecyclerView.setLayoutManager(layoutManager);
         searchRecyclerView.setAdapter(studentSearchAdapter);
@@ -100,8 +99,7 @@ public class MyCourseSearchActivity extends AppCompatActivity {
                     if (course!=null) {
                         for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()) {
                             if (entry.getValue().equals(user.getUid())) {
-                                keyArrayList.add(key);
-                                courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                                courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
                             }
                         }
                     }

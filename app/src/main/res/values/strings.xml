@@ -204,6 +204,9 @@
 
     <string name="submit_text">Submitted Files</string>
 
+    <string name="terminate_request">Terminate request is being processed.</string>
+    <string name="terminate_error">Reason of termination must not be empty</string>
+
     <string name="rating_status_0">Hated it</string>
     <string name="rating_status_1">Didn\'t like it</string>
     <string name="rating_status_2">Not really good</string>
@@ -223,6 +226,9 @@
     <string name="all_course">All Course</string>
 
     <string name="payment_failed">Payment failed with error code %1$d</string>
+
+    <string name="terminate_requested">You have requested for termination.</string>
+    <string name="terminate_requested_student">Student has requested for termination.</string>
 
     <string name="apply_success">You have successfully applied to this course.</string>
 

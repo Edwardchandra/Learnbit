@@ -15,8 +15,6 @@ import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.course.mycoursedetail.MyCourseDetailActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,11 +31,9 @@ import java.util.Locale;
 public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCourseViewHolder> {
 
     private ArrayList<Course> courseArrayList;
-    private ArrayList<String> keyArrayList;
 
-    public MyCourseAdapter(ArrayList<Course> courseArrayList, ArrayList<String> keyArrayList) {
+    public MyCourseAdapter(ArrayList<Course> courseArrayList) {
         this.courseArrayList = courseArrayList;
-        this.keyArrayList = keyArrayList;
     }
 
     @NonNull
@@ -99,7 +95,7 @@ public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCour
 
                     SimpleDateFormat simpleDateFormat2 = new SimpleDateFormat("hh:mm aa", Locale.ENGLISH);
 
-                    FirebaseDatabase.getInstance().getReference("Users").child(courseArrayList.get(position).getTeacherUid()).child("student").child("courses").child(keyArrayList.get(position)).addListenerForSingleValueEvent(new ValueEventListener() {
+                    FirebaseDatabase.getInstance().getReference("Users").child(courseArrayList.get(position).getTeacherUid()).child("student").child("courses").child(courseArrayList.get(position).getCourseKey()).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             String time = dataSnapshot.getValue(String.class);
@@ -136,7 +132,7 @@ public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCour
 
         holder.itemView.setOnClickListener((v) -> {
             Intent intent = new Intent(holder.itemView.getContext(), MyCourseDetailActivity.class);
-            intent.putExtra("key", keyArrayList.get(position));
+            intent.putExtra("key", courseArrayList.get(position).getCourseKey());
             holder.itemView.getContext().startActivity(intent);
         });
     }

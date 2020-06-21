@@ -36,7 +36,6 @@ public class StudentCourseFragment extends Fragment implements View.OnClickListe
     private RecyclerView myCourseRecyclerView;
     private FirebaseUser user;
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
     private MyCourseAdapter courseAdapter;
 
     @Override
@@ -63,7 +62,7 @@ public class StudentCourseFragment extends Fragment implements View.OnClickListe
     }
 
     private void setupRecyclerView(){
-        courseAdapter = new MyCourseAdapter(courseArrayList, keyArrayList);
+        courseAdapter = new MyCourseAdapter(courseArrayList);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
         myCourseRecyclerView.setLayoutManager(layoutManager);
         myCourseRecyclerView.setAdapter(courseAdapter);
@@ -77,10 +76,11 @@ public class StudentCourseFragment extends Fragment implements View.OnClickListe
                     String key = ds.getKey();
                     Course course = ds.getValue(Course.class);
                     if (course!=null){
-                        for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()){
-                            if (entry.getValue().equals(user.getUid())){
-                                courseArrayList.add(new Course(course.getCourseName(), course.getCourseImageURL(), course.getCourseDate(), course.getCourseSchedule(), course.getTeacherUid()));
-                                keyArrayList.add(key);
+                        if (course.getCourseStudent()!=null){
+                            for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()){
+                                if (entry.getValue().equals(user.getUid())){
+                                    courseArrayList.add(new Course(key, course.getCourseName(), course.getCourseImageURL(), course.getCourseDate(), course.getCourseSchedule(), course.getTeacherUid()));
+                                }
                             }
                         }
                         courseAdapter.notifyDataSetChanged();

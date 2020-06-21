@@ -1,20 +1,19 @@
 package com.example.learnbit.launch.student.home.category;
 
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
@@ -41,8 +40,6 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
     private ArrayList<Category> subcategoryArrayList = new ArrayList<>();
     private DatabaseReference databaseReference;
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
-    private ArrayList<String> allKeyArrayList = new ArrayList<>();
     private String categoryName;
     private TextView featureCourse, allCourse;
     private TextView noCategoryCourse;
@@ -131,12 +128,12 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
         subcategoryRecyclerView.setLayoutManager(layoutManager);
         subcategoryRecyclerView.setAdapter(subcategoryAdapter);
 
-        courseCardAdapter = new CourseCardAdapter(courseArrayList, keyArrayList);
+        courseCardAdapter = new CourseCardAdapter(courseArrayList);
         RecyclerView.LayoutManager layoutManager1 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         featuredRecyclerView.setLayoutManager(layoutManager1);
         featuredRecyclerView.setAdapter(courseCardAdapter);
 
-        allCourseAdapter = new AllCourseAdapter(allCourseArrayList, allKeyArrayList);
+        allCourseAdapter = new AllCourseAdapter(allCourseArrayList);
         RecyclerView.LayoutManager layoutManager2 = new LinearLayoutManager(this);
         allCourseRecyclerView.setLayoutManager(layoutManager2);
         allCourseRecyclerView.setAdapter(allCourseAdapter);
@@ -158,11 +155,11 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
                     Course course = ds.getValue(Course.class);
                     if (course!=null){
                         if (course.getCourseAcceptance().equalsIgnoreCase("accepted")){
-                            allCourseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
-                            allKeyArrayList.add(key);
-                            if (course.getCourseRating() >= 4){
-                                courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
-                                keyArrayList.add(key);
+                            if (course.getCourseTime().containsValue(false)){
+                                allCourseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                                if (course.getCourseRating() >= 4){
+                                    courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                                }
                             }
                         }
                     }

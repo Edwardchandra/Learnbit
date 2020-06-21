@@ -34,6 +34,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class StudentHomeFragment extends Fragment implements View.OnClickListener {
 
@@ -41,7 +42,6 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
 
     private ArrayList<Category> categoryArrayList;
     private ArrayList<Course> courseArrayList = new ArrayList<>();
-    private ArrayList<String> keyArrayList = new ArrayList<>();
 
     private CourseCardAdapter courseCardAdapter;
     private DatabaseReference databaseReference;
@@ -78,7 +78,7 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
         categoryRecyclerView.setAdapter(categoryAdapter);
         categoryRecyclerView.setHasFixedSize(true);
 
-        courseCardAdapter = new CourseCardAdapter(courseArrayList, keyArrayList);
+        courseCardAdapter = new CourseCardAdapter(courseArrayList);
         RecyclerView.LayoutManager topRatedLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
         topRatedRecyclerView.setLayoutManager(topRatedLayoutManager);
         topRatedRecyclerView.setAdapter(courseCardAdapter);
@@ -124,8 +124,11 @@ public class StudentHomeFragment extends Fragment implements View.OnClickListene
                     Course course = ds.getValue(Course.class);
                     if (course!=null){
                         if (course.getCourseAcceptance().equalsIgnoreCase("accepted")){
-                            keyArrayList.add(key);
-                            courseArrayList.add(new Course(course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                            if (course.getCourseTime()!=null){
+                                if (course.getCourseTime().containsValue(false)){
+                                    courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                                }
+                            }
                         }
                     }
                     courseCardAdapter.notifyDataSetChanged();

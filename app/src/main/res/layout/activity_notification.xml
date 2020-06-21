@@ -10,6 +10,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/notificationRecyclerView"
         android:layout_width="match_parent"
+        app:reverseLayout="true"
+        app:stackFromEnd="true"
         android:layout_height="match_parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

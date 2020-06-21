@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
+import com.example.learnbit.launch.launch.MainActivity;
 import com.example.learnbit.launch.model.userdata.User;
 import com.example.learnbit.launch.student.profile.accountsettings.StudentEditProfileActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
@@ -141,6 +142,8 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
                 break;
             case R.id.studentProfile_SignOutButton:
                 firebaseAuth.signOut();
+                Intent intent = new Intent(getContext(), MainActivity.class);
+                startActivity(intent);
                 break;
         }
     }
