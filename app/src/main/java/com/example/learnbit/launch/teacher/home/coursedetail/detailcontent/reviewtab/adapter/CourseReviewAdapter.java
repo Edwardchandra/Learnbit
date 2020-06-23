@@ -48,24 +48,26 @@ public class CourseReviewAdapter extends RecyclerView.Adapter<CourseReviewAdapte
     public void onBindViewHolder(@NonNull CourseReviewAdapter.CourseReviewViewHolder holder, int position) {
         holder.reviewImage.setClipToOutline(true);
 
-        FirebaseDatabase.getInstance().getReference("Users").child(courseReviewArrayList.get(position).getUser()).child("name").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String name = dataSnapshot.getValue(String.class);
-                if (name!=null){
-                    holder.reviewName.setText(name);
+        if (courseReviewArrayList.get(position).getUser()!=null){
+            FirebaseDatabase.getInstance().getReference("Users").child(courseReviewArrayList.get(position).getUser()).child("name").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    String name = dataSnapshot.getValue(String.class);
+                    if (name!=null){
+                        holder.reviewName.setText(name);
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-                holder.toast(holder.context.getString(R.string.retrieve_failed));
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    holder.toast(holder.context.getString(R.string.retrieve_failed));
+                }
+            });
 
-        FirebaseStorage.getInstance().getReference("Users").child(courseReviewArrayList.get(position).getUser()).child("profileimage").getDownloadUrl()
-                .addOnSuccessListener(uri -> Glide.with(holder.context).load(uri).into(holder.reviewImage))
-                .addOnFailureListener(e -> holder.toast(holder.context.getString(R.string.retrieve_failed)));
+            FirebaseStorage.getInstance().getReference("Users").child(courseReviewArrayList.get(position).getUser()).child("profileimage").getDownloadUrl()
+                    .addOnSuccessListener(uri -> Glide.with(holder.context).load(uri).into(holder.reviewImage))
+                    .addOnFailureListener(e -> holder.toast(holder.context.getString(R.string.retrieve_failed)));
+        }
 
         holder.reviewDate.setText(courseReviewArrayList.get(position).getTime());
         holder.reviewContent.setText(courseReviewArrayList.get(position).getMessage());
