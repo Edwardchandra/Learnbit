@@ -2,6 +2,7 @@ package com.example.learnbit.launch.student.home.category.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import static android.content.Context.MODE_PRIVATE;
 
 public class AllCourseAdapter extends RecyclerView.Adapter<AllCourseAdapter.AllCourseViewHolder> {
 
@@ -81,7 +84,7 @@ public class AllCourseAdapter extends RecyclerView.Adapter<AllCourseAdapter.AllC
         private TextView allCourseName, allCoursePrice;
         private RatingBar allCourseRatingBar;
         private Context context;
-
+        private static final String detailPreference = "DETAIL_PREFERENCE";
         private String key;
 
         public AllCourseViewHolder(@NonNull View itemView) {
@@ -105,10 +108,18 @@ public class AllCourseAdapter extends RecyclerView.Adapter<AllCourseAdapter.AllC
                 intent.putExtra("key", key);
                 context.startActivity(intent);
             }else{
+                savePreferenceData();
                 Intent intent = new Intent(context, StudentCourseDetailActivity.class);
                 intent.putExtra("key", key);
                 context.startActivity(intent);
             }
+        }
+
+        private void savePreferenceData(){
+            SharedPreferences preferences = itemView.getContext().getSharedPreferences(detailPreference, MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("courseKey", key);
+            editor.apply();
         }
     }
 }

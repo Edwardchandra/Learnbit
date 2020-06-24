@@ -79,7 +79,6 @@ public class RoleActivity extends AppCompatActivity implements View.OnClickListe
     private void savePreferenceData(String role){
         if (getIntent()!=null){
             SharedPreferences preferences = getSharedPreferences(detailPreference, MODE_PRIVATE);
-
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(preferenceKey, role);
             editor.apply();

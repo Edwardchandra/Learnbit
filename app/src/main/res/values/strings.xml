@@ -152,6 +152,7 @@
 
     <string name="retrieve_failed">Failed to retrieve stored data.</string>
     <string name="save_failed">Failed to save data.</string>
+    <string name="save_success">Successfully save data.</string>
     <string name="upload_failed">Failed to upload profile picture.</string>
     <string name="delete_failed">Failed to delete course.</string>
 

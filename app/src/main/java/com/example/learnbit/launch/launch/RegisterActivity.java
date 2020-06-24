@@ -3,6 +3,7 @@ package com.example.learnbit.launch.launch;
 import androidx.annotation.NonNull;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -195,7 +196,7 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
     private void saveData(){
         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
             String deviceToken = instanceIdResult.getToken();
-
+            savePreferenceData();
             databaseReference.child(user.getUid()).setValue(new User(nameET.getText().toString(), emailET.getText().toString(), deviceToken));
         }).addOnFailureListener(e -> toast(getString(R.string.save_failed)));
     }
@@ -256,6 +257,15 @@ public class RegisterActivity extends BaseActivity implements View.OnClickListen
             getSinchServiceInterface().startClient(user.getUid());
         }else{
             updateUI(user);
+        }
+    }
+
+    private void savePreferenceData(){
+        if (getIntent()!=null){
+            SharedPreferences preferences = getSharedPreferences("SIGN_IN_PREFERENCE", MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("signInType", "email");
+            editor.apply();
         }
     }
 }

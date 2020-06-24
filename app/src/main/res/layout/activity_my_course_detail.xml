@@ -115,7 +115,7 @@
                 android:layout_height="match_parent">
 
                 <include
-                    android:id="@+id/include4"
+                    android:id="@+id/teacherProfile"
                     layout="@layout/extension_profile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -129,7 +129,7 @@
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/include4" />
+                    app:layout_constraintTop_toBottomOf="@+id/teacherProfile" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

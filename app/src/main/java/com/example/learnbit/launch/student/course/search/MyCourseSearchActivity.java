@@ -97,9 +97,11 @@ public class MyCourseSearchActivity extends AppCompatActivity {
                     Course course = ds.getValue(Course.class);
 
                     if (course!=null) {
-                        for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()) {
-                            if (entry.getValue().equals(user.getUid())) {
-                                courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                        if (course.getCourseStudent()!=null){
+                            for (HashMap.Entry<String, String> entry : course.getCourseStudent().entrySet()) {
+                                if (entry.getValue().equals(user.getUid())) {
+                                    courseArrayList.add(new Course(key, course.getCourseName(), course.getCoursePrice(), course.getCourseImageURL(), course.getCourseStudent(), course.getCourseRating(), course.getCourseCategory()));
+                                }
                             }
                         }
                     }

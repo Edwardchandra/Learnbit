@@ -46,8 +46,10 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
     private ValueEventListener userEventListener;
+    private ConstraintLayout changePasswordButton;
 
     private static final String detailPreference = "LOGIN_PREFERENCE";
+    private String signInType;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -58,7 +60,7 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
         studentEmail = view.findViewById(R.id.studentProfile_Email);
         studentImage = view.findViewById(R.id.studentProfile_ImageView);
         ConstraintLayout editProfileButton = view.findViewById(R.id.studentProfile_EditProfileButton);
-        ConstraintLayout changePasswordButton = view.findViewById(R.id.studentProfile_ChangePasswordButton);
+        changePasswordButton = view.findViewById(R.id.studentProfile_ChangePasswordButton);
         ConstraintLayout shareButton = view.findViewById(R.id.studentProfile_ShareButton);
         ConstraintLayout faqButton = view.findViewById(R.id.studentProfile_FAQButton);
         ConstraintLayout aboutButton = view.findViewById(R.id.studentProfile_AboutButton);
@@ -77,6 +79,8 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
 
         setStatusBarColor();
         setupFirebase();
+        getPreferenceData();
+        checkPreferenceData();
         retrieveData();
         retrieveDataFromStorage();
 
@@ -181,6 +185,21 @@ public class StudentProfileFragment extends Fragment implements View.OnClickList
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             getActivity().getWindow().setStatusBarColor(Color.WHITE);
             getActivity().getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
+    }
+
+    private void checkPreferenceData(){
+        if (signInType.equalsIgnoreCase("google")){
+            changePasswordButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void getPreferenceData(){
+        String defaultValue = "";
+
+        if (getContext()!=null){
+            SharedPreferences preferences = getContext().getSharedPreferences("SIGN_IN_PREFERENCE", Context.MODE_PRIVATE);
+            signInType = preferences.getString("signInType", defaultValue);
         }
     }
 

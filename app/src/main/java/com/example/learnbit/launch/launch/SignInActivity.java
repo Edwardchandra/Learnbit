@@ -1,7 +1,5 @@
 package com.example.learnbit.launch.launch;
 
-import androidx.annotation.NonNull;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,20 +11,34 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.example.learnbit.R;
 import com.example.learnbit.launch.extension.BaseActivity;
 import com.example.learnbit.launch.extension.SinchService;
+import com.example.learnbit.launch.model.userdata.User;
 import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.sinch.android.rtc.SinchError;
 
 public class SignInActivity extends BaseActivity implements SinchService.StartFailedListener, View.OnClickListener {
 
     //initiate elements variable to connect to layout view
     private androidx.appcompat.widget.Toolbar signInToolbar;
-    private Button signInButton;
+    private Button signInButton, googleSignInButton;
     private EditText emailET;
     private EditText passwordET;
 
@@ -41,6 +53,10 @@ public class SignInActivity extends BaseActivity implements SinchService.StartFa
     //retrieved preference data is being stored in this variable
     private String role;
 
+    //google sign in
+    private GoogleSignInClient googleSignInClient;
+    private static final int RC_SIGN_IN = 9001;
+
     //onCreate method is executed when the activity is created
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,19 +66,33 @@ public class SignInActivity extends BaseActivity implements SinchService.StartFa
         //connect elements variable with layout view elements
         signInToolbar = findViewById(R.id.signInToolbar);
         signInButton = findViewById(R.id.signIn_SignInButton);
+        googleSignInButton = findViewById(R.id.signIn_GoogleSignInButton);
         emailET = findViewById(R.id.signIn_EmailET);
         passwordET = findViewById(R.id.signIn_PasswordET);
+        Button forgotPasswordButton = findViewById(R.id.forgotPasswordButton);
 
         //set sign in button to disabled
         //enabled when sinch service is connected
         signInButton.setEnabled(false);
+        googleSignInButton.setEnabled(false);
 
         //set onClick listener to the onClick method
+        forgotPasswordButton.setOnClickListener(this);
         signInButton.setOnClickListener(this);
+        googleSignInButton.setOnClickListener(this);
 
         setupToobar();
         setupFirebase();
         getPreferenceData();
+        setupGoogleSignIn();
+    }
+
+    private void setupGoogleSignIn(){
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     //setting up custom toolbar for the view
@@ -108,9 +138,55 @@ public class SignInActivity extends BaseActivity implements SinchService.StartFa
                     if (task.isSuccessful()){
                         user = firebaseAuth.getCurrentUser();
                         if (user!=null) {
+                            savePreferenceData("email");
                             startSinchClient();
                         }
                     }else{
+                        toast(getString(R.string.failed_signin));
+                    }
+                });
+    }
+
+    private void signInWithGoogle(){
+        Intent signInIntent = googleSignInClient.getSignInIntent();
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                if (account!=null){
+                    firebaseAuthWithGoogle(account.getIdToken());
+                }
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                toast(e.toString());
+            }
+        }
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        firebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        user = firebaseAuth.getCurrentUser();
+                        if (user!=null){
+                            savePreferenceData("google");
+                            startSinchClient();
+                            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+                                String deviceToken = instanceIdResult.getToken();
+                                FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).setValue(new User(user.getDisplayName(), user.getEmail(), deviceToken));
+                            }).addOnFailureListener(e -> toast(getString(R.string.save_failed)));
+                        }
+                    } else {
                         toast(getString(R.string.failed_signin));
                     }
                 });
@@ -147,6 +223,7 @@ public class SignInActivity extends BaseActivity implements SinchService.StartFa
         super.onServiceConnected();
 
         signInButton.setEnabled(true);
+        googleSignInButton.setEnabled(true);
         getSinchServiceInterface().setStartListener(this);
     }
 
@@ -178,8 +255,17 @@ public class SignInActivity extends BaseActivity implements SinchService.StartFa
     //OnClick method is executed when an OnClick assigned element is being clicked.
     @Override
     public void onClick(View v) {
-        if (v.getId()==R.id.signIn_SignInButton){
-            checkEditText();
+        switch (v.getId()){
+            case R.id.signIn_SignInButton:
+                checkEditText();
+                break;
+            case R.id.signIn_GoogleSignInButton:
+                signInWithGoogle();
+                break;
+            case R.id.forgotPasswordButton:
+                Intent intent = new Intent(this, ForgotPasswordActivity.class);
+                startActivity(intent);
+                break;
         }
     }
 
@@ -197,6 +283,15 @@ public class SignInActivity extends BaseActivity implements SinchService.StartFa
             passwordET.setError(getString(R.string.password_field_error_character));
         }else{
             signIn();
+        }
+    }
+
+    private void savePreferenceData(String signInType){
+        if (getIntent()!=null){
+            SharedPreferences preferences = getSharedPreferences("SIGN_IN_PREFERENCE", MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("signInType", signInType);
+            editor.apply();
         }
     }
 

@@ -39,6 +39,7 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
 
     private ImageView teacherProfileImageView;
     private TextView teacherProfileName, teacherProfileEmail, teacherProfileBio, teacherProfileScore, teacherProfileBalance;
+    private ConstraintLayout changePasswordButton;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
@@ -48,6 +49,8 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
     private User users = new User();
 
     private static final String detailPreference = "LOGIN_PREFERENCE";
+
+    private String signInType;
 
     public TeacherProfileFragment() {
         // Required empty public constructor
@@ -63,7 +66,7 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         teacherProfileEmail = view.findViewById(R.id.teacherProfile_Email);
         ConstraintLayout withdrawButton = view.findViewById(R.id.teacherProfile_WithdrawButton);
         ConstraintLayout editProfileButton = view.findViewById(R.id.teacherProfile_EditProfileButton);
-        ConstraintLayout changePasswordButton = view.findViewById(R.id.teacherProfile_ChangePasswordButton);
+        changePasswordButton = view.findViewById(R.id.teacherProfile_ChangePasswordButton);
         ConstraintLayout aboutButton = view.findViewById(R.id.teacherProfile_AboutButton);
         ConstraintLayout faqButton = view.findViewById(R.id.teacherProfile_FAQButton);
         ConstraintLayout shareButton = view.findViewById(R.id.teacherProfile_ShareButton);
@@ -87,6 +90,8 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         firebaseSetup();
         retrieveDataFromFirebase();
         retrieveDataFromStorage();
+        getPreferenceData();
+        checkPreferenceData();
 
         return view;
     }
@@ -207,4 +212,18 @@ public class TeacherProfileFragment extends Fragment implements View.OnClickList
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+    private void checkPreferenceData(){
+        if (signInType.equalsIgnoreCase("google")){
+            changePasswordButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void getPreferenceData(){
+        String defaultValue = "";
+
+        if (getContext()!=null){
+            SharedPreferences preferences = getContext().getSharedPreferences("SIGN_IN_PREFERENCE", Context.MODE_PRIVATE);
+            signInType = preferences.getString("signInType", defaultValue);
+        }
+    }
 }

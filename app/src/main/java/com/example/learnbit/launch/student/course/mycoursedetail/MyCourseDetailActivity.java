@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,6 +29,7 @@ import com.example.learnbit.launch.reusableactivity.CallScreenActivity;
 import com.example.learnbit.launch.student.course.adapter.MyCourseSectionAdapter;
 import com.example.learnbit.launch.student.course.mycoursedetail.rating.RatingActivity;
 import com.example.learnbit.launch.student.course.mycoursedetail.terminate.TerminateActivity;
+import com.example.learnbit.launch.student.teacherprofile.TeacherProfileActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.adapter.SectionAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
@@ -86,6 +88,13 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         callButton = findViewById(R.id.callButton);
         sectionRecyclerView = findViewById(R.id.curriculumRecyclerView);
         myCourseToolbar = findViewById(R.id.myCourseDetail_Toolbar);
+        ConstraintLayout teacherProfile = findViewById(R.id.teacherProfile);
+
+        teacherProfile.setOnClickListener((v) -> {
+            Intent intent = new Intent(this, TeacherProfileActivity.class);
+            intent.putExtra("teacherUid", teacherUid);
+            startActivity(intent);
+        });
 
         callButton.setEnabled(false);
         callButton.setOnClickListener(this);

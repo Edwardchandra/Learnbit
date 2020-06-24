@@ -19,4 +19,5 @@
     <color name="greenColor">#4CAF50</color>
     <color name="darkGreenColor">#009688</color>
     <color name="redColor">#F44336</color>
+    <color name="googleRedColor">#FF3333</color>
 </resources>

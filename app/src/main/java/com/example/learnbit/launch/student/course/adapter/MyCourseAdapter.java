@@ -1,6 +1,7 @@
 package com.example.learnbit.launch.student.course.adapter;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCourseViewHolder> {
 
     private ArrayList<Course> courseArrayList;
@@ -47,6 +50,7 @@ public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCour
 
     @Override
     public void onBindViewHolder(@NonNull MyCourseAdapter.MyCourseViewHolder holder, int position) {
+        holder.courseKey = courseArrayList.get(position).getCourseKey();
         holder.courseName.setText(courseArrayList.get(position).getCourseName());
         Glide.with(holder.itemView.getContext()).load(courseArrayList.get(position).getCourseImageURL()).into(holder.courseImageView);
 
@@ -131,6 +135,7 @@ public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCour
         }
 
         holder.itemView.setOnClickListener((v) -> {
+            holder.savePreferenceData();
             Intent intent = new Intent(holder.itemView.getContext(), MyCourseDetailActivity.class);
             intent.putExtra("key", courseArrayList.get(position).getCourseKey());
             holder.itemView.getContext().startActivity(intent);
@@ -146,6 +151,8 @@ public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCour
 
         private ImageView courseImageView;
         private TextView courseName, courseTeacher, courseSchedule;
+        private String courseKey;
+        private static final String detailPreference = "DETAIL_PREFERENCE";
 
         public MyCourseViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -156,10 +163,19 @@ public class MyCourseAdapter extends RecyclerView.Adapter<MyCourseAdapter.MyCour
             courseSchedule = itemView.findViewById(R.id.myCourseSchedule);
 
             courseImageView.setClipToOutline(true);
+
+            savePreferenceData();
         }
 
         private void toast(String message){
             Toast.makeText(itemView.getContext(), message, Toast.LENGTH_SHORT).show();
+        }
+
+        private void savePreferenceData(){
+            SharedPreferences preferences = itemView.getContext().getSharedPreferences(detailPreference, MODE_PRIVATE);
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("courseKey", courseKey);
+            editor.apply();
         }
     }
 }

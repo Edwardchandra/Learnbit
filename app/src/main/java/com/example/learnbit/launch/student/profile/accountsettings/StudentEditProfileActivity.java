@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -63,6 +65,8 @@ public class StudentEditProfileActivity extends AppCompatActivity implements Vie
 
     private User users = new User();
 
+    private String signInType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +84,8 @@ public class StudentEditProfileActivity extends AppCompatActivity implements Vie
 
         setupToolbar();
         setupFirebase();
+        getPreferenceData();
+        checkPreferenceData();
         retrieveData();
     }
 
@@ -119,7 +125,11 @@ public class StudentEditProfileActivity extends AppCompatActivity implements Vie
                 pickFromGallery();
                 break;
             case R.id.editProfile_SaveButton:
-                checkEditText();
+                if (signInType.equalsIgnoreCase("email")){
+                    checkEditText();
+                }else if (signInType.equalsIgnoreCase("google")){
+                    checkEditTextGoogle();
+                }
                 break;
         }
     }
@@ -139,9 +149,6 @@ public class StudentEditProfileActivity extends AppCompatActivity implements Vie
             profilePassword.setError(getString(R.string.password_field_error_character));
         }else{
             updateProfileData();
-            uploadProfileImage();
-            Intent intent = new Intent(getApplicationContext(), StudentMainActivity.class);
-            startActivity(intent);
         }
     }
 
@@ -162,21 +169,24 @@ public class StudentEditProfileActivity extends AppCompatActivity implements Vie
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
 
+        user = firebaseAuth.getCurrentUser();
         storageReference = firebaseStorage.getReference().child("Users").child(user.getUid()).child("profileimage");
         databaseReference = firebaseDatabase.getReference("Users").child(user.getUid());
-        user = firebaseAuth.getCurrentUser();
     }
 
     private void updateProfileData(){
         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
             String token = instanceIdResult.getToken();
-            databaseReference.setValue(new User(profileName.getText().toString(), profileEmail.getText().toString(), token));
 
             if (user.getEmail()!=null){
                 AuthCredential authCredential = EmailAuthProvider.getCredential(user.getEmail(), profilePassword.getText().toString());
                 user.reauthenticate(authCredential).addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
+                        databaseReference.setValue(new User(profileName.getText().toString(), profileEmail.getText().toString(), token));
                         user.updateEmail(profileEmail.getText().toString());
+                        uploadProfileImage();
+                        Intent intent = new Intent(getApplicationContext(), StudentMainActivity.class);
+                        startActivity(intent);
                     }else{
                         toast(getString(R.string.save_failed));
                     }
@@ -219,6 +229,48 @@ public class StudentEditProfileActivity extends AppCompatActivity implements Vie
         UploadTask uploadTask = storageReference.putBytes(data);
         uploadTask.addOnFailureListener(e -> toast(getString(R.string.upload_failed)))
                 .addOnSuccessListener(taskSnapshot -> toast(getString(R.string.upload_success)));
+    }
+
+    private void getPreferenceData(){
+        String defaultValue = "";
+
+        if (getApplicationContext()!=null){
+            SharedPreferences preferences = getApplicationContext().getSharedPreferences("SIGN_IN_PREFERENCE", Context.MODE_PRIVATE);
+            signInType = preferences.getString("signInType", defaultValue);
+        }
+    }
+
+    private void checkPreferenceData(){
+        if (signInType.equalsIgnoreCase("google")){
+            profileEmail.setVisibility(View.GONE);
+            profilePassword.setVisibility(View.GONE);
+        }else{
+            profileEmail.setVisibility(View.VISIBLE);
+            profilePassword.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void checkEditTextGoogle(){
+        if(profileName.getText().toString().isEmpty()){
+            profileName.setError(getString(R.string.name_field_error));
+        }else if(profileName.getText().toString().length() < 3){
+            profileName.setError(getString(R.string.name_field_error_character));
+        }else{
+            updateProfileDataGoogle();
+        }
+    }
+
+    private void updateProfileDataGoogle(){
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+            String token = instanceIdResult.getToken();
+
+            if (user.getEmail()!=null){
+                uploadProfileImage();
+                databaseReference.setValue(new User(profileName.getText().toString(), user.getEmail(), token));
+                Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
+                startActivity(intent);
+            }
+        }).addOnFailureListener(e -> toast(getString(R.string.save_failed)));
     }
 
     //show toast

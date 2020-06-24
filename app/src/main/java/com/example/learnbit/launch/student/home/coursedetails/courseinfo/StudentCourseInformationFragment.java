@@ -1,6 +1,7 @@
 package com.example.learnbit.launch.student.home.coursedetails.courseinfo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +25,7 @@ import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.BenefitAdapter;
 import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.RequirementAdapter;
 import com.example.learnbit.launch.student.home.coursedetails.courseinfo.adapter.StudentSectionAdapter;
+import com.example.learnbit.launch.student.teacherprofile.TeacherProfileActivity;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.model.Section;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -55,7 +58,7 @@ public class StudentCourseInformationFragment extends Fragment {
     private ArrayList<Section> sectionArrayList = new ArrayList<>();
 
     private static final String detailPreference = "STUDENT_DETAIL_PREFERENCE";
-    private String key;
+    private String key, teacherUid;
 
     private BenefitAdapter benefitAdapter;
     private RequirementAdapter requirementAdapter;
@@ -77,6 +80,13 @@ public class StudentCourseInformationFragment extends Fragment {
         teacherName = view.findViewById(R.id.teacherName);
         teacherCourseCount = view.findViewById(R.id.teacherCourseCount);
         teacherRatings = view.findViewById(R.id.teacherRatings);
+        ConstraintLayout teacherProfile = view.findViewById(R.id.teacherProfile);
+
+        teacherProfile.setOnClickListener((v) -> {
+            Intent intent = new Intent(getContext(), TeacherProfileActivity.class);
+            intent.putExtra("teacherUid", teacherUid);
+            startActivity(intent);
+        });
 
         teacherImageView.setClipToOutline(true);
 
@@ -114,18 +124,20 @@ public class StudentCourseInformationFragment extends Fragment {
             FirebaseStorage firebaseStorage = FirebaseStorage.getInstance();
 
             ValueEventListener retrieveEventListener = new ValueEventListener() {
-                @RequiresApi(api = Build.VERSION_CODES.N)
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     emptyArrayList();
                     Course course = dataSnapshot.getValue(Course.class);
                     if (course != null) {
                         courseSummary.setText(course.getCourseSummary());
+                        teacherUid = course.getTeacherUid();
 
-                        try {
-                            courseScheduleDate.setText(getString(R.string.divider, dateFormatter(course.getCourseDate().get("startDate")), dateFormatter(course.getCourseDate().get("endDate"))));
-                        } catch (ParseException e) {
-                            e.printStackTrace();
+                        if (getActivity()!=null){
+                            try {
+                                courseScheduleDate.setText(getActivity().getString(R.string.divider, dateFormatter(course.getCourseDate().get("startDate")), dateFormatter(course.getCourseDate().get("endDate"))));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         for (HashMap.Entry<String, Boolean> entry : course.getCourseTime().entrySet()) {
@@ -171,8 +183,10 @@ public class StudentCourseInformationFragment extends Fragment {
                         courseScheduleTime.setText(getString(R.string.schedule_time, schedule.toString(), time.toString()));
 
                         for (HashMap.Entry<String, Section> entry : course.getCourseCurriculum().entrySet()) {
-                            sectionArrayList.add(new Section(entry.getKey(), entry.getValue().getName(), entry.getValue().getTopics()));
-                            sectionArrayList.sort(Comparator.comparing(Section::getWeek));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                                sectionArrayList.add(new Section(entry.getKey(), entry.getValue().getName(), entry.getValue().getTopics()));
+                                sectionArrayList.sort(Comparator.comparing(Section::getWeek));
+                            }
                         }
 
                         benefitAdapter.notifyDataSetChanged();

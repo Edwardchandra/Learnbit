@@ -13,6 +13,8 @@ import com.example.learnbit.launch.extension.BaseActivity;
 import com.example.learnbit.launch.extension.SinchService;
 import com.example.learnbit.launch.student.StudentMainActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.sinch.android.rtc.SinchError;

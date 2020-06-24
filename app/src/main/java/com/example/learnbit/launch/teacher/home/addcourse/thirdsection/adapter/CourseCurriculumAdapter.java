@@ -98,6 +98,10 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 curriculumArrayList.get(position).setSpinnerA(parent.getItemAtPosition(pos).toString());
+                TextView selectedValue = (TextView) parent.getChildAt(0);
+                if (selectedValue!=null){
+                    selectedValue.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.black));
+                }
             }
 
             @Override
@@ -108,6 +112,10 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 curriculumArrayList.get(position).setSpinnerB(parent.getItemAtPosition(pos).toString());
+                TextView selectedValue = (TextView) parent.getChildAt(0);
+                if (selectedValue!=null){
+                    selectedValue.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.black));
+                }
             }
 
             @Override
@@ -118,6 +126,10 @@ public class CourseCurriculumAdapter extends RecyclerView.Adapter<CourseCurricul
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                 curriculumArrayList.get(position).setSpinnerC(parent.getItemAtPosition(pos).toString());
+                TextView selectedValue = (TextView) parent.getChildAt(0);
+                if (selectedValue!=null){
+                    selectedValue.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.black));
+                }
             }
 
             @Override

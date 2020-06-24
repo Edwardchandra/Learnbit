@@ -5,7 +5,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -53,8 +55,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
     private User users = new User();
 
-    private double rating;
-    private long balance;
+    private String signInType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +73,24 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         changeProfileImageButton.setOnClickListener(this);
         saveChangesButton.setOnClickListener(this);
 
+        getPreferenceData();
+        checkPreferenceData();
         setupToolbar();
         setupFirebaseAuth();
         setupFirebaseDatabase();
         setupFirebaseStorage();
         retrieveDataFromFirebase();
         retrieveProfileImage();
+    }
+
+    private void checkPreferenceData(){
+        if (signInType.equalsIgnoreCase("google")){
+            profileEmail.setVisibility(View.GONE);
+            profilePassword.setVisibility(View.GONE);
+        }else{
+            profileEmail.setVisibility(View.VISIBLE);
+            profilePassword.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -116,7 +129,11 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 pickFromGallery();
                 break;
             case R.id.editProfile_SaveButton:
-                checkEditText();
+                if (signInType.equalsIgnoreCase("email")){
+                    checkEditText();
+                }else if (signInType.equalsIgnoreCase("google")){
+                    checkEditTextGoogle();
+                }
                 break;
         }
     }
@@ -136,10 +153,31 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
             profileEmail.setError(getString(R.string.email_field_error_format));
         }else{
             updateProfileData();
-            uploadProfileImage();
-            Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
-            startActivity(intent);
         }
+    }
+
+    private void checkEditTextGoogle(){
+        if(profileName.getText().toString().isEmpty()){
+            profileName.setError(getString(R.string.name_field_error));
+        }else if(profileName.getText().toString().length() < 3){
+            profileName.setError(getString(R.string.name_field_error_character));
+        }else{
+            updateProfileDataGoogle();
+        }
+    }
+
+    private void updateProfileDataGoogle(){
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
+            String token = instanceIdResult.getToken();
+
+            if (user.getEmail()!=null){
+                uploadProfileImage();
+                databaseReference.setValue(new User(profileName.getText().toString(), user.getEmail(), token));
+                databaseReference1.child("description").setValue(profileBio.getText().toString());
+                Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
+                startActivity(intent);
+            }
+        }).addOnFailureListener(e -> toast(getString(R.string.save_failed)));
     }
 
     private boolean isValidEmail(EditText editText) {
@@ -174,21 +212,24 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     private void updateProfileData(){
         FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(instanceIdResult -> {
             String token = instanceIdResult.getToken();
-            databaseReference.setValue(new User(profileName.getText().toString(), profileEmail.getText().toString(), token));
-            databaseReference1.setValue(new Teacher(balance, profileBio.getText().toString(), rating));
 
             if (user.getEmail()!=null){
                 AuthCredential authCredential = EmailAuthProvider.getCredential(user.getEmail(), profilePassword.getText().toString());
                 user.reauthenticate(authCredential).addOnCompleteListener(task -> {
                     if (task.isSuccessful()){
+                        uploadProfileImage();
+                        databaseReference.setValue(new User(profileName.getText().toString(), profileEmail.getText().toString(), token));
+                        databaseReference1.child("description").setValue(profileBio.getText().toString());
                         user.updateEmail(profileEmail.getText().toString());
-                        toast(getString(R.string.upload_success));
+                        Intent intent = new Intent(getApplicationContext(), TeacherMainActivity.class);
+                        startActivity(intent);
+                        toast(getString(R.string.save_success));
                     }else{
-                        toast(getString(R.string.upload_failed));
+                        toast(getString(R.string.save_failed));
                     }
                 });
             }
-        }).addOnFailureListener(e -> toast(getString(R.string.upload_failed)));
+        }).addOnFailureListener(e -> toast(getString(R.string.save_failed)));
     }
 
     private void retrieveDataFromFirebase(){
@@ -202,8 +243,6 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
                 if (teacher!=null){
                     profileBio.setText(teacher.getDescription());
-                    rating = teacher.getRating();
-                    balance = teacher.getBalance();
                 }
             }
 
@@ -235,6 +274,15 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         UploadTask uploadTask = storageReference.putBytes(data);
         uploadTask.addOnFailureListener(e -> toast(getString(R.string.upload_failed)))
                 .addOnSuccessListener(taskSnapshot -> toast(getString(R.string.upload_success)));
+    }
+
+    private void getPreferenceData(){
+        String defaultValue = "";
+
+        if (getApplicationContext()!=null){
+            SharedPreferences preferences = getApplicationContext().getSharedPreferences("SIGN_IN_PREFERENCE", Context.MODE_PRIVATE);
+            signInType = preferences.getString("signInType", defaultValue);
+        }
     }
 
     //show toast
