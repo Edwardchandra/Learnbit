@@ -11,11 +11,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,10 +57,12 @@ import java.util.Locale;
 public class MyCourseDetailActivity extends BaseActivity implements View.OnClickListener {
 
     private RecyclerView sectionRecyclerView;
-    private TextView myCourseName, myCourseCategory, myCourseStartTime, teacherName, teacherRatings, teacherCourseCount;
+    private TextView myCourseName, myCourseCategory, myCourseStartTime, teacherName, teacherRatings, teacherCourseCount, scoreSummary, scoreDescription, score;
     private ImageView teacherImageView, myCourseImageView;
     private Toolbar myCourseToolbar;
     private Button callButton;
+    private CardView scoreOverallCard;
+    private LinearLayout scoreCard;
 
     private String courseTime;
     private String key;
@@ -89,6 +93,11 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         sectionRecyclerView = findViewById(R.id.curriculumRecyclerView);
         myCourseToolbar = findViewById(R.id.myCourseDetail_Toolbar);
         ConstraintLayout teacherProfile = findViewById(R.id.teacherProfile);
+        scoreSummary = findViewById(R.id.scoreStatus);
+        scoreDescription = findViewById(R.id.scoreDescription);
+        score = findViewById(R.id.score);
+        scoreOverallCard = findViewById(R.id.scoreOverallCard);
+        scoreCard = findViewById(R.id.scoreCard);
 
         teacherProfile.setOnClickListener((v) -> {
             Intent intent = new Intent(this, TeacherProfileActivity.class);
@@ -107,6 +116,7 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         setupFirebase();
         setupRecyclerView();
         retrieveData();
+        retrieveScoreData();
         checkServiceEnabled();
     }
 
@@ -215,7 +225,7 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
                         myCourseStartTime.setText(getString(R.string.course_end_period));
                         callButton.setText(getString(R.string.call_button_rating));
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            callButton.setBackgroundColor(getColor(R.color.orangeColor));
+                            callButton.setBackground(getDrawable(R.drawable.rating_button));
                         }
                     }
 
@@ -279,6 +289,47 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
                             .addOnFailureListener(e -> toast(getString(R.string.retrieve_failed)));
 
                     sectionAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                toast(getString(R.string.retrieve_failed));
+            }
+        });
+    }
+
+    private void retrieveScoreData(){
+        FirebaseDatabase.getInstance().getReference("Users").child(user.getUid()).child("student").child("score").child(key).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int total = 0;
+
+                for (DataSnapshot ds : dataSnapshot.getChildren()){
+                    Integer value = ds.getValue(Integer.class);
+                    if (value!=null){
+                        total = total + value;
+                    }
+                }
+
+                if (total == 0){
+                    scoreOverallCard.setVisibility(View.GONE);
+                }else{
+                    scoreOverallCard.setVisibility(View.VISIBLE);
+                    score.setText(getString(R.string.score, total));
+                    if (total < 50){
+                        scoreCard.setBackgroundColor(getResources().getColor(R.color.redColor));
+                        scoreSummary.setText(getString(R.string.score50));
+                        scoreDescription.setText(getString(R.string.score50_decription));
+                    }else if (total < 80){
+                        scoreCard.setBackgroundColor(getResources().getColor(R.color.orangeColor));
+                        scoreSummary.setText(getString(R.string.score80));
+                        scoreDescription.setText(getString(R.string.score80_description));
+                    }else {
+                        scoreCard.setBackgroundColor(getResources().getColor(R.color.greenColor));
+                        scoreSummary.setText(getString(R.string.score100));
+                        scoreDescription.setText(getString(R.string.score100_description));
+                    }
                 }
             }
 

@@ -16,12 +16,16 @@ import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,6 +37,7 @@ import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.cours
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.File;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.Material;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.model.Submit;
+import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.submitscore.SelectStudentFragment;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -52,6 +57,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
     //initiate elements' variables
     private TextView uploadingTextView, submitTextView, materialTextView;
     private RecyclerView filesRecyclerView, materialRecyclerView, submitRecyclerView;
+    private Button submitScore;
 
     //upload files result key
     private static final int RESULT_UPLOAD_FILES = 0;
@@ -82,6 +88,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_supporting_files);
 
+        submitScore = findViewById(R.id.giveScore);
         materialTextView = findViewById(R.id.materialTextView);
         materialRecyclerView = findViewById(R.id.uploadedRecyclerView);
         filesRecyclerView = findViewById(R.id.filesRecyclerView);
@@ -89,6 +96,8 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         submitTextView = findViewById(R.id.submitTextView);
         submitRecyclerView = findViewById(R.id.submitRecyclerView);
         FloatingActionButton addFilesButton = findViewById(R.id.addFilesButton);
+
+        submitScore.setVisibility(View.GONE);
 
         retrieveIntentData();
         getPreferenceData();
@@ -101,9 +110,12 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         retrieveData();
         retrieveSubmitData();
         handleRecyclerViewSwipe();
+        savePreferenceData();
+
 
         //set button click listener to overriding method
         addFilesButton.setOnClickListener(this);
+        submitScore.setOnClickListener(this);
     }
 
     //retrieve stored data from shared preference
@@ -194,6 +206,7 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
                     }else{
                         submitTextView.setVisibility(View.GONE);
                         submitRecyclerView.setVisibility(View.GONE);
+                        submitScore.setVisibility(View.GONE);
                     }
 
                     submitAdapter.notifyDataSetChanged();
@@ -410,8 +423,20 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
     //execute elements action when clicked
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.addFilesButton){
-            selectFiles();
+        switch (v.getId()){
+            case R.id.addFilesButton:
+                selectFiles();
+                break;
+            case R.id.giveScore:
+                FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                Fragment prev = getSupportFragmentManager().findFragmentByTag("dialog");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+                DialogFragment dialogFragment = new SelectStudentFragment();
+                dialogFragment.show(ft, "dialog");
+                break;
         }
     }
 
@@ -505,6 +530,13 @@ public class SupportingFilesActivity extends AppCompatActivity implements View.O
         materialKeyArrayList.remove(position);
         materialArrayList.remove(position);
         materialAdapter.notifyItemRemoved(position);
+    }
+
+    private void savePreferenceData(){
+        SharedPreferences preferences = getSharedPreferences("SECTION_TOPIC_PREFERENCE", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("topic", courseSectionTopic);
+        editor.apply();
     }
 
     @Override

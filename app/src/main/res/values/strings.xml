@@ -233,6 +233,15 @@
 
     <string name="apply_success">You have successfully applied to this course.</string>
 
+    <string name="score">%1$d</string>
+
+    <string name="score50">Study harder!</string>
+    <string name="score50_decription">You have to study harder. We know you can do it!</string>
+    <string name="score80">Keep it up!</string>
+    <string name="score80_description">Keep up the good work and keep challenging!</string>
+    <string name="score100">Excellent!</string>
+    <string name="score100_description">Congratulation! Your score is at its peak!</string>
+
     <string name="student_term_one">Student can request for course cancellation at any time. Course cancellation will take between 3 – 7 days as we need to verify the details. The amount of refund will be decided by us.</string>
     <string name="student_term_two">Student must be responsible with their own course schedule as Learnbit will only give reminder of upcoming course.</string>
     <string name="student_term_three">Every teacher will have their own rules and we encourage student to always behave well to their respective teacher.</string>

@@ -173,6 +173,7 @@ public class CourseHolder extends RecyclerView.ViewHolder implements View.OnClic
         SharedPreferences preferences = context.getSharedPreferences(detailPreference, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("courseKey", key);
+        editor.putString("courseName", courseName);
         editor.apply();
     }
 }

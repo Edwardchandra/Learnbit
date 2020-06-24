@@ -19,8 +19,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".launch.student.teacherprofile.TeacherProfileActivity"
+        <activity android:name=".launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.submitscore.SubmitScoreActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".launch.student.teacherprofile.TeacherProfileActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".launch.launch.ForgotPasswordActivity" />
         <activity android:name=".launch.student.course.mycoursedetail.terminate.TerminateActivity" />
         <activity
