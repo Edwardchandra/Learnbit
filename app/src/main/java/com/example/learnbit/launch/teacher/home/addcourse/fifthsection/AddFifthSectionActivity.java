@@ -51,7 +51,7 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
     private ImageView courseImageView;
 
     private String dateTime;
-    private String timestamp;
+    private long timestamp;
     private String courseName, courseCategory, courseSubcategory, courseSummary, courseStartDate, courseEndDate, courseImageURL;
     private String[] courseScheduleArray;
     private ArrayList<Time> courseTimeArrayList;
@@ -231,7 +231,6 @@ public class AddFifthSectionActivity extends AppCompatActivity implements View.O
 
         dateTime = simpleDateFormat.format(new java.util.Date());
 
-        long timestampLong = System.currentTimeMillis()/1000;
-        timestamp = Long.toString(timestampLong);
+        timestamp = System.currentTimeMillis()/1000;
     }
 }

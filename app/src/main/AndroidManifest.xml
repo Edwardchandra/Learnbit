@@ -19,8 +19,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.submitscore.SubmitScoreActivity"
+        <activity android:name=".launch.student.home.category.subcategory.search.SubcategorySearchActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".launch.student.home.category.search.CategorySearchActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".launch.reusableactivity.ChatActivity" />
+        <activity
+            android:name=".launch.teacher.home.coursedetail.detailcontent.coursestab.supportingfiles.submitscore.SubmitScoreActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".launch.student.teacherprofile.TeacherProfileActivity"
             android:theme="@style/AppTheme.NoActionBar" />

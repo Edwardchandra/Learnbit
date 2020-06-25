@@ -28,6 +28,7 @@ import com.example.learnbit.launch.extension.BaseActivity;
 import com.example.learnbit.launch.extension.SinchService;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.reusableactivity.CallScreenActivity;
+import com.example.learnbit.launch.reusableactivity.ChatActivity;
 import com.example.learnbit.launch.student.course.adapter.MyCourseSectionAdapter;
 import com.example.learnbit.launch.student.course.mycoursedetail.rating.RatingActivity;
 import com.example.learnbit.launch.student.course.mycoursedetail.terminate.TerminateActivity;
@@ -98,6 +99,12 @@ public class MyCourseDetailActivity extends BaseActivity implements View.OnClick
         score = findViewById(R.id.score);
         scoreOverallCard = findViewById(R.id.scoreOverallCard);
         scoreCard = findViewById(R.id.scoreCard);
+        Button chatButton = findViewById(R.id.chatButton);
+
+        chatButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ChatActivity.class);
+            startActivity(intent);
+        });
 
         teacherProfile.setOnClickListener((v) -> {
             Intent intent = new Intent(this, TeacherProfileActivity.class);

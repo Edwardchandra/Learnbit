@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.home.category.adapter.AllCourseAdapter;
+import com.example.learnbit.launch.student.home.category.subcategory.search.SubcategorySearchActivity;
 import com.example.learnbit.launch.student.home.search.StudentSearchActivity;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -101,7 +102,8 @@ public class SubcategoryActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.subcategorySearchBarButton:
-                Intent intent = new Intent(this, StudentSearchActivity.class);
+                Intent intent = new Intent(this, SubcategorySearchActivity.class);
+                intent.putExtra("subcategoryName", subcategoryName);
                 startActivity(intent);
                 break;
             case R.id.backButton:

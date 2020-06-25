@@ -22,7 +22,8 @@ import java.util.Locale;
 public class TerminateActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView terminateReason;
-    private String dateTime, timestamp;
+    private String dateTime;
+    private long timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +77,7 @@ public class TerminateActivity extends AppCompatActivity implements View.OnClick
 
         dateTime = simpleDateFormat.format(new java.util.Date());
 
-        long timestampLong = System.currentTimeMillis()/1000;
-        timestamp = Long.toString(timestampLong);
+        timestamp = System.currentTimeMillis()/1000;
     }
 
     @Override

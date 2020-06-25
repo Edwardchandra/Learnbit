@@ -4,10 +4,10 @@ public class Notification {
     private String title;
     private String message;
     private String role;
-    private String timestamp;
+    private long timestamp;
     private String dateTime;
 
-    public Notification(String title, String message, String role, String timestamp, String dateTime) {
+    public Notification(String title, String message, String role, long timestamp, String dateTime) {
         this.title = title;
         this.message = message;
         this.role = role;
@@ -41,11 +41,11 @@ public class Notification {
         this.role = role;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

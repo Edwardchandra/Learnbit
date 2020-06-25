@@ -9,9 +9,9 @@ public class Withdraw {
     private int amount;
     private String userUid;
     private String dateTime;
-    private String timestamp;
+    private long timestamp;
 
-    public Withdraw(String bankName, int bankNumber, String destinationName, String isSent, int amount, String userUid, String dateTime, String timestamp) {
+    public Withdraw(String bankName, int bankNumber, String destinationName, String isSent, int amount, String userUid, String dateTime, long timestamp) {
         this.bankName = bankName;
         this.bankNumber = bankNumber;
         this.destinationName = destinationName;
@@ -81,11 +81,11 @@ public class Withdraw {
         this.dateTime = dateTime;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.studenttab;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -12,13 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.learnbit.R;
 import com.example.learnbit.launch.model.coursedata.Course;
+import com.example.learnbit.launch.reusableactivity.ChatActivity;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.studenttab.adapter.CourseStudentAdapter;
 import com.example.learnbit.launch.teacher.home.coursedetail.detailcontent.studenttab.model.CourseStudent;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -51,8 +55,6 @@ public class StudentFragment extends Fragment {
     //initiate preference key to retrieve Shared Preference data
     private static final String detailPreference = "DETAIL_PREFERENCE";
 
-    //initiate firebase variables
-    private FirebaseUser user;
     private FirebaseDatabase firebaseDatabase;
 
     //empty constructor
@@ -85,10 +87,7 @@ public class StudentFragment extends Fragment {
 
     //setup firebase instance
     private void setupFirebase(){
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
-
-        user = firebaseAuth.getCurrentUser();
     }
 
     //retrieve student data from firebase database and store to arraylist

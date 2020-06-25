@@ -21,12 +21,12 @@ public class Course {
     private HashMap<String, String> courseSchedule;
     private HashMap<String, String> courseStudent;
     private String createTime;
-    private String timestamp;
+    private long timestamp;
     private float courseRating;
     private String teacherUid;
     private String courseKey;
 
-    public Course(String courseName, String courseSummary, long coursePrice, String courseAcceptance, String courseCategory, String courseSubcategory, String courseImageURL, String createTime, String timestamp, float courseRating, String teacherUid) {
+    public Course(String courseName, String courseSummary, long coursePrice, String courseAcceptance, String courseCategory, String courseSubcategory, String courseImageURL, String createTime, long timestamp, float courseRating, String teacherUid) {
         this.courseName = courseName;
         this.courseSummary = courseSummary;
         this.coursePrice = coursePrice;
@@ -172,11 +172,11 @@ public class Course {
         this.createTime = createTime;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

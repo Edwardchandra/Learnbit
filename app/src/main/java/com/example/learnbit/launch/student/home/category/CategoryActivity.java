@@ -20,6 +20,7 @@ import com.example.learnbit.launch.model.coursedata.Course;
 import com.example.learnbit.launch.student.home.adapter.CourseCardAdapter;
 import com.example.learnbit.launch.student.home.category.adapter.AllCourseAdapter;
 import com.example.learnbit.launch.student.home.category.adapter.SubcategoryAdapter;
+import com.example.learnbit.launch.student.home.category.search.CategorySearchActivity;
 import com.example.learnbit.launch.student.home.model.Category;
 import com.example.learnbit.launch.student.home.search.StudentSearchActivity;
 import com.google.firebase.database.DataSnapshot;
@@ -193,7 +194,8 @@ public class CategoryActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.categorySearchBarButton:
-                Intent intent = new Intent(this, StudentSearchActivity.class);
+                Intent intent = new Intent(this, CategorySearchActivity.class);
+                intent.putExtra("categoryName", categoryName);
                 startActivity(intent);
                 break;
             case R.id.backButton:

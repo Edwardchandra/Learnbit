@@ -48,7 +48,7 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
 
     private String spinnerValue;
     private String dateTime;
-    private String timestamp;
+    private long timestamp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,8 +142,7 @@ public class WithdrawActivity extends AppCompatActivity implements AdapterView.O
 
         dateTime = simpleDateFormat.format(new java.util.Date());
 
-        long timestampLong = System.currentTimeMillis()/1000;
-        timestamp = Long.toString(timestampLong);
+        timestamp = System.currentTimeMillis()/1000;
     }
 
     private void getData(){

@@ -6,14 +6,14 @@ public class Terminate {
     private String userUid;
     private String courseUid;
     private String dateTime;
-    private String timestamp;
+    private long timestamp;
     private String courseTime;
     private String status;
 
     public Terminate() {
     }
 
-    public Terminate(String reason, String userUid, String courseUid, String dateTime, String timestamp, String courseTime, String status) {
+    public Terminate(String reason, String userUid, String courseUid, String dateTime, long timestamp, String courseTime, String status) {
         this.reason = reason;
         this.userUid = userUid;
         this.courseUid = courseUid;
@@ -55,11 +55,11 @@ public class Terminate {
         this.dateTime = dateTime;
     }
 
-    public String getTimestamp() {
+    public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 

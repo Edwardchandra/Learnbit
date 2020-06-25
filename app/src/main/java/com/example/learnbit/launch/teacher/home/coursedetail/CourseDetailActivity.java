@@ -19,8 +19,10 @@ import com.bumptech.glide.Glide;
 import com.example.learnbit.R;
 import com.example.learnbit.launch.extension.BaseActivity;
 import com.example.learnbit.launch.model.coursedata.Course;
+import com.example.learnbit.launch.reusableactivity.ChatActivity;
 import com.example.learnbit.launch.teacher.TeacherMainActivity;
 import com.example.learnbit.launch.teacher.home.coursedetail.adapter.CourseDetailViewPagerAdapter;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -70,6 +72,12 @@ public class CourseDetailActivity extends BaseActivity {
         courseCategoryET = findViewById(R.id.courseDetail_CourseCategory);
         linearLayout = findViewById(R.id.courseDetail_LinearLayout);
         courseStatus = findViewById(R.id.courseStatus);
+        FloatingActionButton chatButton = findViewById(R.id.chatButton);
+        chatButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ChatActivity.class);
+            startActivity(intent);
+        });
+
 
         setupToolbar();
         setupViewPager();
